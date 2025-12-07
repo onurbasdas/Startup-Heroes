@@ -229,7 +229,10 @@ class NewsListViewController: BaseViewController {
             self.tableView.reloadData()
             self.hideLoading()
             self.retryButton.isEnabled = true
-            self.updateEmptyState(show: news.isEmpty)
+            
+            let isSearchActive = !(self.searchController.searchBar.text?.isEmpty ?? true)
+            let isSearchEmpty = isSearchActive && news.isEmpty
+            self.updateEmptyState(show: news.isEmpty, isSearchEmpty: isSearchEmpty)
         }
         
         viewModel.onError = { [weak self] message in
@@ -287,11 +290,11 @@ class NewsListViewController: BaseViewController {
         }
     }
     
-    private func updateEmptyState(show: Bool, isError: Bool = false) {
+    private func updateEmptyState(show: Bool, isError: Bool = false, isSearchEmpty: Bool = false) {
         emptyStateView.isHidden = !show
         tableView.isHidden = show
         
-        if show {
+        if show && !isSearchEmpty {
             navigationItem.searchController = nil
         } else {
             navigationItem.searchController = searchController
@@ -302,6 +305,11 @@ class NewsListViewController: BaseViewController {
             emptyStateTitleLabel.text = "Üzgünüz, limiti aştınız :("
             emptyStateMessageLabel.text = "API günlük istek limitine ulaştı. Lütfen daha sonra tekrar deneyin."
             retryButton.isHidden = false
+        } else if isSearchEmpty {
+            emptyStateImageView.image = UIImage(systemName: "magnifyingglass")
+            emptyStateTitleLabel.text = "Sonuç bulunamadı"
+            emptyStateMessageLabel.text = "Aradığınız kriterlere uygun haber bulunamadı. Lütfen farklı bir arama terimi deneyin."
+            retryButton.isHidden = true
         } else if show {
             emptyStateImageView.image = UIImage(systemName: "newspaper")
             emptyStateTitleLabel.text = "Henüz haber yok"
