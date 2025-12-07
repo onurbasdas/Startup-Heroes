@@ -134,7 +134,6 @@ class NewsDetailViewController: UIViewController {
     
     // MARK: - Private Methods
     private func loadImage(from url: URL) {
-        // TODO: Async image loading implementation
-        newsImageView.image = nil
+        newsImageView.loadImage(from: url.absoluteString)
     }
 }
