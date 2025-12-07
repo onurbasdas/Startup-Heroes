@@ -38,14 +38,20 @@ nonisolated class NewsAPIService: NewsAPIServiceProtocol {
                 do {
                     let decoder = JSONDecoder()
                     let newsResponse = try decoder.decode(NewsResponse.self, from: data)
-                    completion(.success(newsResponse))
+                    DispatchQueue.main.async {
+                        completion(.success(newsResponse))
+                    }
                 } catch {
                     debugPrint("DEBUG - JSON decode error: \(error.localizedDescription)")
-                    completion(.failure(error))
+                    DispatchQueue.main.async {
+                        completion(.failure(error))
+                    }
                 }
             case .failure(let error):
                 debugPrint("DEBUG - Network request error: \(error.localizedDescription)")
-                completion(.failure(error))
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
             }
         }
     }
@@ -64,14 +70,20 @@ nonisolated class NewsAPIService: NewsAPIServiceProtocol {
                 do {
                     let decoder = JSONDecoder()
                     let sourcesResponse = try decoder.decode(NewsSourceResponse.self, from: data)
-                    completion(.success(sourcesResponse))
+                    DispatchQueue.main.async {
+                        completion(.success(sourcesResponse))
+                    }
                 } catch {
                     debugPrint("DEBUG - JSON decode error: \(error.localizedDescription)")
-                    completion(.failure(error))
+                    DispatchQueue.main.async {
+                        completion(.failure(error))
+                    }
                 }
             case .failure(let error):
                 debugPrint("DEBUG - Network request error: \(error.localizedDescription)")
-                completion(.failure(error))
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
             }
         }
     }

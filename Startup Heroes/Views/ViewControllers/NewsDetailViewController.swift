@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class NewsDetailViewController: UIViewController {
+class NewsDetailViewController: BaseViewController {
     
     private let scrollView = UIScrollView()
     private let contentView = UIStackView()

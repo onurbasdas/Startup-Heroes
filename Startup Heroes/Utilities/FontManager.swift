@@ -10,19 +10,23 @@ import UIKit
 struct FontManager {
     
     static func titleFont(size: CGFloat) -> UIFont {
-        return UIFont(name: "Georgia-Bold", size: size) ?? .boldSystemFont(ofSize: size)
+        return .systemFont(ofSize: size, weight: .bold)
     }
     
     static func bodyFont(size: CGFloat) -> UIFont {
-        return UIFont(name: "Georgia", size: size) ?? .systemFont(ofSize: size)
+        return .systemFont(ofSize: size, weight: .regular)
     }
     
     static func bodyFontMedium(size: CGFloat) -> UIFont {
-        return UIFont(name: "Georgia", size: size) ?? .systemFont(ofSize: size, weight: .medium)
+        return .systemFont(ofSize: size, weight: .medium)
+    }
+    
+    static func bodyFontSemibold(size: CGFloat) -> UIFont {
+        return .systemFont(ofSize: size, weight: .semibold)
     }
     
     static func captionFont(size: CGFloat) -> UIFont {
-        return UIFont(name: "Georgia", size: size) ?? .systemFont(ofSize: size)
+        return .systemFont(ofSize: size, weight: .regular)
     }
     
     static let newsTitle: UIFont = titleFont(size: 18)

@@ -39,7 +39,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             networkMonitor: networkMonitor
         )
         
-        let newsListVC = NewsListViewController(viewModel: newsListViewModel)
+        let newsListVC = NewsListViewController(viewModel: newsListViewModel, readingListManager: readingListManager)
         
         let navigationController = UINavigationController(rootViewController: newsListVC)
         navigationController.navigationBar.prefersLargeTitles = false

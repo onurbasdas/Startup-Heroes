@@ -7,7 +7,7 @@
 
 import Foundation
 
-class NewsListViewModel {
+class NewsListViewModel: BaseViewModel {
     
     var onNewsUpdated: (([News]) -> Void)?
     var onError: ((String) -> Void)?
@@ -33,7 +33,7 @@ class NewsListViewModel {
     }
     
     private var lastScrollOffset: CGFloat = 0
-    private var refreshTimer: Timer?
+    nonisolated(unsafe) private var refreshTimer: Timer?
     
     private let newsAPIService: NewsAPIServiceProtocol
     private let readingListManager: ReadingListManagerProtocol
@@ -67,15 +67,23 @@ class NewsListViewModel {
         refreshTimer = nil
     }
     
-    deinit {
-        stopPeriodicRefresh()
+    nonisolated deinit {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
         networkMonitor.stopMonitoring()
     }
     
     func fetchNews() {
         guard networkMonitor.isConnected else {
+            Task { @MainActor in
+                self.setLoading(false)
+            }
             onError?("İnternet bağlantısı yok. Bağlantı kurulduğunda haberler otomatik yüklenecek.")
             return
+        }
+        
+        Task { @MainActor in
+            self.setLoading(true)
         }
         
         let previousCount = newsItems.count
@@ -85,6 +93,10 @@ class NewsListViewModel {
             guard let self = self else { return }
             
             DispatchQueue.main.async {
+                Task { @MainActor in
+                    self.setLoading(false)
+                }
+                
                 switch result {
                 case .success(let response):
                     self.newsItems = response.results
