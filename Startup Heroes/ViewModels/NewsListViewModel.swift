@@ -172,6 +172,7 @@ class NewsListViewModel: BaseViewModel {
         if let networkError = error as? NetworkError,
            case .httpError(let statusCode) = networkError,
            statusCode == 429 {
+            stopPeriodicRefresh()
             onError?("API limit aşıldı. Lütfen birkaç dakika sonra tekrar deneyin. (Günlük 200 request limiti)")
         } else {
             onError?("Haberler yüklenirken bir hata oluştu: \(error.localizedDescription)")

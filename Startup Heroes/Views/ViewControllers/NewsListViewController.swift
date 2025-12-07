@@ -297,6 +297,12 @@ class NewsListViewController: BaseViewController {
         emptyStateView.isHidden = !show
         tableView.isHidden = show
         
+        if show {
+            navigationItem.searchController = nil
+        } else {
+            navigationItem.searchController = searchController
+        }
+        
         if isError {
             emptyStateImageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
             emptyStateTitleLabel.text = "Üzgünüz, limiti aştınız :("
