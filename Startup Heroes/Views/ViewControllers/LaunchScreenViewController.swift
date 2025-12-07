@@ -25,6 +25,18 @@ class LaunchScreenViewController: UIViewController {
         return gradient
     }()
     
+    private let backgroundGradientLayer: CAGradientLayer = {
+        let gradient = CAGradientLayer()
+        gradient.colors = [
+            ColorManager.primaryOrangeLight.withAlphaComponent(0.2).cgColor,
+            ColorManager.primaryOrange.withAlphaComponent(0.25).cgColor,
+            ColorManager.primaryOrangeDark.withAlphaComponent(0.2).cgColor
+        ]
+        gradient.startPoint = CGPoint(x: 0.0, y: 0.0)
+        gradient.endPoint = CGPoint(x: 1.0, y: 1.0)
+        return gradient
+    }()
+    
     private let cardView1: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(red: 1.0, green: 0.65, blue: 0.3, alpha: 0.3)
@@ -64,10 +76,11 @@ class LaunchScreenViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "STARTUP HEROES"
+        label.text = "STARTUP\nHEROES"
         label.font = .boldSystemFont(ofSize: 32)
         label.textColor = .white
         label.textAlignment = .center
+        label.numberOfLines = 2
         return label
     }()
     
@@ -79,10 +92,11 @@ class LaunchScreenViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         gradientLayer.frame = containerView.bounds
+        backgroundGradientLayer.frame = view.bounds
     }
     
     private func setupUI() {
-        view.backgroundColor = ColorManager.backgroundLight
+        view.layer.insertSublayer(backgroundGradientLayer, at: 0)
         
         view.addSubview(containerView)
         containerView.layer.insertSublayer(gradientLayer, at: 0)
@@ -136,8 +150,8 @@ class LaunchScreenViewController: UIViewController {
         titleLabel.snp.makeConstraints { make in
             make.top.equalTo(newsIconView.snp.bottom).offset(30)
             make.centerX.equalToSuperview()
-            make.leading.greaterThanOrEqualToSuperview().offset(20)
-            make.trailing.lessThanOrEqualToSuperview().offset(-20)
+            make.leading.equalToSuperview().offset(20)
+            make.trailing.equalToSuperview().offset(-20)
         }
         
         createNewsIcon()

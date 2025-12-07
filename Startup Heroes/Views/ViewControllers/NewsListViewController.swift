@@ -38,6 +38,8 @@ class NewsListViewController: UIViewController {
         
         navigationItem.title = "News"
         navigationController?.navigationBar.prefersLargeTitles = false
+        navigationController?.navigationBar.backgroundColor = ColorManager.backgroundLight
+        navigationController?.navigationBar.barTintColor = ColorManager.backgroundLight
         
         setupUI()
         setupSearchBar()
@@ -64,11 +66,12 @@ class NewsListViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(NewsTableViewCell.self, forCellReuseIdentifier: NewsTableViewCell.identifier)
-        tableView.estimatedRowHeight = 160
+        tableView.estimatedRowHeight = 180
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.separatorStyle = .singleLine
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        tableView.separatorStyle = .none
         tableView.backgroundColor = ColorManager.backgroundLight
+        tableView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
+        tableView.showsVerticalScrollIndicator = false
         
         view.addSubview(tableView)
         

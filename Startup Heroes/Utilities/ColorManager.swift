@@ -19,7 +19,7 @@ struct ColorManager {
     static let textPrimary = UIColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 1.0)
     static let textSecondary = UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1.0)
     
-    static let navigationBarBackground = UIColor(red: 0.99, green: 0.99, blue: 0.99, alpha: 1.0)
+    static let navigationBarBackground = UIColor(red: 0.98, green: 0.98, blue: 0.98, alpha: 1.0)
     
     static func orangeGradientColors() -> [CGColor] {
         return [

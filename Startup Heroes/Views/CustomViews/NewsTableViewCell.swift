@@ -8,18 +8,27 @@
 import UIKit
 import SnapKit
 
-/// Haber listesi için özel table view cell
 class NewsTableViewCell: UITableViewCell {
     
     static let identifier = "NewsTableViewCell"
     
-    // MARK: - UI Components
+    private let cardView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 16
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOffset = CGSize(width: 0, height: 2)
+        view.layer.shadowRadius = 8
+        view.layer.shadowOpacity = 0.1
+        return view
+    }()
+    
     private let newsImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.backgroundColor = ColorManager.backgroundSecondary
-        imageView.layer.cornerRadius = 8
+        imageView.layer.cornerRadius = 12
         return imageView
     }()
     
@@ -48,7 +57,7 @@ class NewsTableViewCell: UITableViewCell {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldSystemFont(ofSize: 17)
+        label.font = .boldSystemFont(ofSize: 18)
         label.numberOfLines = 3
         label.textColor = ColorManager.textPrimary
         label.setContentCompressionResistancePriority(.required, for: .vertical)
@@ -80,7 +89,7 @@ class NewsTableViewCell: UITableViewCell {
     private let addToReadingListButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Add to my reading list", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 14)
+        button.titleLabel?.font = .systemFont(ofSize: 15, weight: .medium)
         button.setTitleColor(ColorManager.primaryOrange, for: .normal)
         button.contentHorizontalAlignment = .leading
         return button
@@ -91,7 +100,6 @@ class NewsTableViewCell: UITableViewCell {
     private var currentNews: News?
     private var currentImageURL: URL?
     
-    // MARK: - Initialization
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -101,21 +109,28 @@ class NewsTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Setup
     private func setupUI() {
-        contentView.addSubview(newsImageView)
+        backgroundColor = .clear
+        selectionStyle = .none
+        
+        contentView.addSubview(cardView)
+        cardView.addSubview(newsImageView)
         newsImageView.addSubview(shimmerView)
-        contentView.addSubview(titleLabel)
-        contentView.addSubview(creatorLabel)
-        contentView.addSubview(pubDateLabel)
-        contentView.addSubview(descriptionLabel)
-        contentView.addSubview(addToReadingListButton)
+        cardView.addSubview(titleLabel)
+        cardView.addSubview(creatorLabel)
+        cardView.addSubview(pubDateLabel)
+        cardView.addSubview(descriptionLabel)
+        cardView.addSubview(addToReadingListButton)
+        
+        cardView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16))
+        }
         
         newsImageView.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(16)
             make.top.equalToSuperview().offset(16)
-            make.width.equalTo(100)
-            make.height.equalTo(100)
+            make.width.equalTo(110)
+            make.height.equalTo(110)
         }
         
         shimmerView.snp.makeConstraints { make in
@@ -130,13 +145,13 @@ class NewsTableViewCell: UITableViewCell {
         
         creatorLabel.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
-            make.top.equalTo(titleLabel.snp.bottom).offset(10)
+            make.top.equalTo(titleLabel.snp.bottom).offset(12)
         }
         
         pubDateLabel.snp.makeConstraints { make in
             make.leading.equalTo(creatorLabel.snp.trailing).offset(8)
             make.top.equalTo(creatorLabel)
-            make.trailing.lessThanOrEqualTo(titleLabel)
+            make.trailing.lessThanOrEqualToSuperview().offset(-16)
         }
         
         descriptionLabel.snp.makeConstraints { make in
@@ -147,7 +162,7 @@ class NewsTableViewCell: UITableViewCell {
         
         addToReadingListButton.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
-            make.top.equalTo(descriptionLabel.snp.bottom).offset(12)
+            make.top.equalTo(descriptionLabel.snp.bottom).offset(14)
             make.bottom.equalToSuperview().offset(-16)
         }
         
@@ -159,6 +174,20 @@ class NewsTableViewCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         shimmerGradientLayer.frame = shimmerView.bounds
+        
+        cardView.layer.shadowPath = UIBezierPath(
+            roundedRect: cardView.bounds,
+            cornerRadius: cardView.layer.cornerRadius
+        ).cgPath
+    }
+    
+    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+        super.setHighlighted(highlighted, animated: animated)
+        
+        UIView.animate(withDuration: 0.2) {
+            self.cardView.transform = highlighted ? CGAffineTransform(scaleX: 0.98, y: 0.98) : .identity
+            self.cardView.alpha = highlighted ? 0.9 : 1.0
+        }
     }
     
     // MARK: - Configuration
