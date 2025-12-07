@@ -9,8 +9,13 @@ import Foundation
 
 /// Uygulama sabitleri
 enum Constants {
-    /// NewsData API anahtarı - Production'da güvenli şekilde saklanmalı
-    static let newsAPIKey = "YOUR_API_KEY_HERE"
+    /// NewsData API anahtarı - Info.plist'ten okunur
+    static var newsAPIKey: String {
+        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "NewsAPIKey") as? String else {
+            fatalError("NewsAPIKey bulunamadı. Info.plist dosyasını kontrol edin.")
+        }
+        return apiKey
+    }
     
     /// API yenileme aralığı (saniye cinsinden - 60 saniye = 1 dakika)
     static let newsRefreshInterval: TimeInterval = 60

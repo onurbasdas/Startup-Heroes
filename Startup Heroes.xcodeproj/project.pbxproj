@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		774F052B2EE57F7D000F0F3A /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 774F052A2EE57F7D000F0F3A /* SnapKit */; };
+		774F05EC2EE580F4000F0F3A /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 774F05EB2EE580F4000F0F3A /* Kingfisher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				774F05EC2EE580F4000F0F3A /* Kingfisher in Frameworks */,
 				774F052B2EE57F7D000F0F3A /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -131,6 +133,7 @@
 			name = "Startup Heroes";
 			packageProductDependencies = (
 				774F052A2EE57F7D000F0F3A /* SnapKit */,
+				774F05EB2EE580F4000F0F3A /* Kingfisher */,
 			);
 			productName = "Startup Heroes";
 			productReference = 77E04BF52EE57CE700BCDDB2 /* Startup Heroes.app */;
@@ -216,6 +219,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				774F05292EE57F7D000F0F3A /* XCRemoteSwiftPackageReference "SnapKit" */,
+				774F05EA2EE580F4000F0F3A /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 77E04BF62EE57CE700BCDDB2 /* Products */;
@@ -302,8 +306,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Startup Heroes/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -334,8 +336,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Startup Heroes/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -610,6 +610,14 @@
 				minimumVersion = 5.7.1;
 			};
 		};
+		774F05EA2EE580F4000F0F3A /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.6.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -617,6 +625,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 774F05292EE57F7D000F0F3A /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		774F05EB2EE580F4000F0F3A /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 774F05EA2EE580F4000F0F3A /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
