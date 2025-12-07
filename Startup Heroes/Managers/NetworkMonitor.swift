@@ -11,7 +11,7 @@ import Network
 protocol NetworkMonitorProtocol {
     var isConnected: Bool { get }
     func startMonitoring()
-    func stopMonitoring()
+    nonisolated func stopMonitoring()
     func onConnectionChange(_ handler: @escaping (Bool) -> Void)
 }
 

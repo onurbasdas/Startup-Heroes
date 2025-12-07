@@ -122,7 +122,10 @@ class NewsTableViewCell: UITableViewCell {
         cardView.addSubview(addToReadingListButton)
         
         cardView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16))
+            make.top.equalToSuperview().offset(8)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+            make.bottom.equalToSuperview().offset(-8).priority(999)
         }
         
         newsImageView.snp.makeConstraints { make in
@@ -170,7 +173,7 @@ class NewsTableViewCell: UITableViewCell {
             make.leading.equalTo(titleLabel)
             make.trailing.lessThanOrEqualToSuperview().offset(-16)
             make.top.equalTo(descriptionLabel.snp.bottom).offset(14)
-            make.bottom.equalToSuperview().offset(-16)
+            make.bottom.equalToSuperview().offset(-16).priority(999)
         }
         
         addToReadingListButton.titleLabel?.snp.makeConstraints { make in
@@ -271,7 +274,7 @@ class NewsTableViewCell: UITableViewCell {
                 case .failure(let error):
                     let nsError = error as NSError
                     if nsError.code != NSURLErrorCancelled {
-                        debugPrint("DEBUG - Failed to load image from \(url.absoluteString): \(error.localizedDescription)")
+                        // Image load failed, use background color
                     }
                     self.newsImageView.backgroundColor = ColorManager.backgroundSecondary
                 }

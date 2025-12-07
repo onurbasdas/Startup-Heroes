@@ -73,10 +73,13 @@ class ImageLoader: ImageLoaderProtocol {
                 return
             }
             
-            self.cache.setObject(image, forKey: nsURL)
+            // Fix image format to prevent kCGImageBlockFormatBGRx8 error
+            let fixedImage = self.fixImageFormat(image)
+            
+            self.cache.setObject(fixedImage, forKey: nsURL)
             
             DispatchQueue.main.async {
-                completion(.success(image))
+                completion(.success(fixedImage))
             }
         }
         
@@ -94,6 +97,41 @@ class ImageLoader: ImageLoaderProtocol {
                 self.activeTasks.removeValue(forKey: url)
             }
         }
+    }
+    
+    private func fixImageFormat(_ image: UIImage) -> UIImage {
+        // If image is already in correct format, return as is
+        guard let cgImage = image.cgImage else {
+            return image
+        }
+        
+        // Check if image needs format conversion
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let width = cgImage.width
+        let height = cgImage.height
+        let bytesPerPixel = 4
+        let bytesPerRow = bytesPerPixel * width
+        let bitsPerComponent = 8
+        
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: bitsPerComponent,
+            bytesPerRow: bytesPerRow,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            return image
+        }
+        
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        
+        guard let fixedCGImage = context.makeImage() else {
+            return image
+        }
+        
+        return UIImage(cgImage: fixedCGImage, scale: image.scale, orientation: image.imageOrientation)
     }
 }
 

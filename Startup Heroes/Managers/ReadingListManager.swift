@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 protocol ReadingListManagerProtocol {
     func addToReadingList(_ news: News)
@@ -22,6 +23,9 @@ class ReadingListManager: ReadingListManagerProtocol {
     private var cacheTimestamp: Date?
     private let cacheValidityDuration: TimeInterval = 1.0 // 1 saniye cache
     
+    // Combine publisher for reading list changes
+    let readingListDidChange = PassthroughSubject<Void, Never>()
+    
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
     }
@@ -32,6 +36,11 @@ class ReadingListManager: ReadingListManagerProtocol {
         if !isInReadingList(news) {
             readingList.insert(news, at: 0)
             saveReadingList(readingList)
+            // Invalidate cache to ensure fresh data on next read
+            cachedReadingList = nil
+            cacheTimestamp = nil
+            // Notify subscribers about the change
+            readingListDidChange.send()
         }
     }
     
@@ -39,6 +48,11 @@ class ReadingListManager: ReadingListManagerProtocol {
         var readingList = getAllReadingListItems()
         readingList.removeAll { $0.articleId == news.articleId }
         saveReadingList(readingList)
+        // Invalidate cache to ensure fresh data on next read
+        cachedReadingList = nil
+        cacheTimestamp = nil
+        // Notify subscribers about the change
+        readingListDidChange.send()
     }
     
     func isInReadingList(_ news: News) -> Bool {
@@ -48,6 +62,7 @@ class ReadingListManager: ReadingListManagerProtocol {
     }
     
     func getAllReadingListItems() -> [News] {
+        // Cache kontrolü - ama cache invalidate edilmişse (nil) her zaman fresh data çek
         if let cached = cachedReadingList,
            let timestamp = cacheTimestamp,
            Date().timeIntervalSince(timestamp) < cacheValidityDuration {

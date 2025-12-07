@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Combine
 
 /// Haber listesi view controller
 class NewsListViewController: BaseViewController {
@@ -63,9 +64,11 @@ class NewsListViewController: BaseViewController {
     private var displayedNews: [News] = []
     private var lastScrollOffset: CGFloat = 0
     private var isFirstAppearance = true
+    private var isHandlingButtonTap = false
     
     private let viewModel: NewsListViewModel
     private let readingListManager: ReadingListManagerProtocol
+    private var cancellables = Set<AnyCancellable>()
     
     init(viewModel: NewsListViewModel, readingListManager: ReadingListManagerProtocol) {
         self.viewModel = viewModel
@@ -83,22 +86,56 @@ class NewsListViewController: BaseViewController {
         
         navigationItem.title = "News"
         setupNavigationBar()
-        setupRightBarButton()
         
         setupUI()
         setupSearchBar()
         setupViewModelBindings()
+        setupReadingListObserver()
         viewModel.startNetworkMonitoring()
         viewModel.fetchNews()
     }
     
+    private func setupReadingListObserver() {
+        // Observe reading list changes from ReadingListManager
+        // Only refresh when changes come from ReadingListViewController (modal dismiss)
+        // Changes within NewsListViewController are handled locally via cell.updateReadingListButton
+        if let readingListManager = readingListManager as? ReadingListManager {
+            readingListManager.readingListDidChange
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    guard let self = self else { return }
+                    // Skip refresh if we're currently handling a button tap in NewsListViewController
+                    // The button tap already updates the cell locally, no need to reload all cells
+                    if self.isHandlingButtonTap {
+                        return
+                    }
+                    
+                    // This change came from ReadingListViewController, refresh cache and reload cells
+                    self.viewModel.refreshReadingListCache()
+                    
+                    if let visibleIndexPaths = self.tableView.indexPathsForVisibleRows, !visibleIndexPaths.isEmpty {
+                        self.tableView.reloadRows(at: visibleIndexPaths, with: .none)
+                    }
+                }
+                .store(in: &cancellables)
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Setup button after navigation bar is fully laid out to avoid constraint conflicts
+        setupRightBarButton()
+    }
+    
     private func setupRightBarButton() {
-        let favoriteButton = UIButton(type: .system)
-        favoriteButton.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
+        let favoriteButton = UIBarButtonItem(
+            image: UIImage(systemName: "bookmark.fill"),
+            style: .plain,
+            target: self,
+            action: #selector(favoriteButtonTapped)
+        )
         favoriteButton.tintColor = ColorManager.primaryOrange
-        favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: favoriteButton)
+        navigationItem.rightBarButtonItem = favoriteButton
     }
     
     @objc private func favoriteButtonTapped() {
@@ -125,6 +162,7 @@ class NewsListViewController: BaseViewController {
             return
         }
         
+        // Reading list changes are handled by Combine publisher, no need to refresh cache here
         viewModel.fetchNews(appendMode: true)
     }
     
@@ -155,7 +193,7 @@ class NewsListViewController: BaseViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(NewsTableViewCell.self, forCellReuseIdentifier: NewsTableViewCell.identifier)
-        tableView.estimatedRowHeight = 180
+        tableView.estimatedRowHeight = 220
         tableView.rowHeight = UITableView.automaticDimension
         tableView.separatorStyle = .none
         tableView.backgroundColor = ColorManager.backgroundLight
@@ -336,11 +374,20 @@ extension NewsListViewController: UITableViewDataSource {
         cell.configure(with: news, isInReadingList: isInReadingList)
         cell.onReadingListButtonTapped = { [weak self] news in
             guard let self = self else { return }
+            
+            // Mark that we're handling a button tap to prevent Combine publisher from reloading all cells
+            self.isHandlingButtonTap = true
+            
             self.viewModel.toggleReadingList(for: news)
             
             // Sadece button state'ini güncelle, görselleri yeniden yükleme
             let newIsInReadingList = self.viewModel.isInReadingList(news)
             cell.updateReadingListButton(isInReadingList: newIsInReadingList)
+            
+            // Reset flag after a short delay to allow Combine publisher to process
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.isHandlingButtonTap = false
+            }
         }
         
         return cell

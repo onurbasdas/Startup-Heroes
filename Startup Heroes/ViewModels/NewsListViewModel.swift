@@ -43,7 +43,7 @@ class NewsListViewModel: BaseViewModel {
     // Reading list cache for performance
     private var cachedReadingListArticleIds: Set<String> = []
     private var readingListCacheTimestamp: Date?
-    private let readingListCacheValidityDuration: TimeInterval = 0.5 // 0.5 saniye cache
+    private let readingListCacheValidityDuration: TimeInterval = 5.0 // 5 saniye cache validity
     
     init(
         newsAPIService: NewsAPIServiceProtocol,
@@ -81,9 +81,8 @@ class NewsListViewModel: BaseViewModel {
     nonisolated deinit {
         refreshTimer?.invalidate()
         refreshTimer = nil
-        Task { @MainActor in
-            networkMonitor.stopMonitoring()
-        }
+        // Use nonisolated method directly to avoid self capture in deinit
+        networkMonitor.stopMonitoring()
     }
     
     func fetchNews(appendMode: Bool = false) {
@@ -174,13 +173,14 @@ class NewsListViewModel: BaseViewModel {
     func isInReadingList(_ news: News) -> Bool {
         guard let articleId = news.articleId else { return false }
         
-        // Cache kontrolü
+        // Her zaman fresh data kullan (cache validity duration 0.0 olduğu için)
+        // Ama performans için cache'i kullan, sadece cache geçersizse refresh et
         if let timestamp = readingListCacheTimestamp,
            Date().timeIntervalSince(timestamp) < readingListCacheValidityDuration {
             return cachedReadingListArticleIds.contains(articleId)
         }
         
-        // Cache geçersiz, yenile
+        // Cache geçersiz veya yok, fresh data çek
         refreshReadingListCache()
         return cachedReadingListArticleIds.contains(articleId)
     }
@@ -192,18 +192,25 @@ class NewsListViewModel: BaseViewModel {
             readingListManager.addToReadingList(news)
         }
         // Cache'i invalidate et
-        refreshReadingListCache()
+        refreshReadingListCacheInternal()
         // onNewsUpdated çağrılmayacak - sadece ilgili cell reload edilecek
     }
     
-    private func refreshReadingListCache() {
+    func refreshReadingListCache() {
+        // Force invalidate cache timestamp to ensure fresh data is fetched
+        readingListCacheTimestamp = nil
+        
+        // Fetch fresh data from ReadingListManager
         let readingList = readingListManager.getAllReadingListItems()
         let newArticleIds = Set(readingList.compactMap { $0.articleId })
         
-        if newArticleIds != cachedReadingListArticleIds {
-            cachedReadingListArticleIds = newArticleIds
-            readingListCacheTimestamp = Date()
-        }
+        // Update cache and timestamp
+        cachedReadingListArticleIds = newArticleIds
+        readingListCacheTimestamp = Date()
+    }
+    
+    private func refreshReadingListCacheInternal() {
+        refreshReadingListCache()
     }
     
     func saveScrollPosition(_ offset: CGFloat) {

@@ -13,18 +13,19 @@ protocol NewsAPIServiceProtocol {
     func fetchNewsSources(completion: @escaping (Result<NewsSourceResponse, Error>) -> Void)
 }
 
-nonisolated class NewsAPIService: NewsAPIServiceProtocol {
+class NewsAPIService: NewsAPIServiceProtocol {
     
     private let networkService: NetworkServiceProtocol
     private let apiKey: String
     private let baseURL = "https://newsdata.io/api/1"
     
-    nonisolated init(networkService: NetworkServiceProtocol, apiKey: String) {
+    init(networkService: NetworkServiceProtocol, apiKey: String) {
         self.networkService = networkService
         self.apiKey = apiKey
     }
     
-    nonisolated func fetchNews(completion: @escaping (Result<NewsResponse, Error>) -> Void) {
+    
+    func fetchNews(completion: @escaping (Result<NewsResponse, Error>) -> Void) {
         let urlString = "\(baseURL)/news?apikey=\(apiKey)"
         
         guard let url = URL(string: urlString) else {
@@ -35,17 +36,18 @@ nonisolated class NewsAPIService: NewsAPIServiceProtocol {
         networkService.request(url: url) { result in
             switch result {
             case .success(let data):
-                Task.detached {
-                    do {
+                do {
+                    // Decode on the main actor because the model's Decodable conformance is main-actor isolated
+                    let newsResponse = try MainActor.assumeIsolated { () -> NewsResponse in
                         let decoder = JSONDecoder()
-                        let newsResponse = try decoder.decode(NewsResponse.self, from: data)
-                        DispatchQueue.main.async {
-                            completion(.success(newsResponse))
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            completion(.failure(error))
-                        }
+                        return try decoder.decode(NewsResponse.self, from: data)
+                    }
+                    DispatchQueue.main.async {
+                        completion(.success(newsResponse))
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        completion(.failure(error))
                     }
                 }
             case .failure(let error):
@@ -56,7 +58,7 @@ nonisolated class NewsAPIService: NewsAPIServiceProtocol {
         }
     }
     
-    nonisolated func fetchNewsSources(completion: @escaping (Result<NewsSourceResponse, Error>) -> Void) {
+    func fetchNewsSources(completion: @escaping (Result<NewsSourceResponse, Error>) -> Void) {
         let urlString = "\(baseURL)/sources?apikey=\(apiKey)"
         
         guard let url = URL(string: urlString) else {
@@ -67,17 +69,18 @@ nonisolated class NewsAPIService: NewsAPIServiceProtocol {
         networkService.request(url: url) { result in
             switch result {
             case .success(let data):
-                Task.detached {
-                    do {
+                do {
+                    // Decode on the main actor because the model's Decodable conformance is main-actor isolated
+                    let sourcesResponse = try MainActor.assumeIsolated { () -> NewsSourceResponse in
                         let decoder = JSONDecoder()
-                        let sourcesResponse = try decoder.decode(NewsSourceResponse.self, from: data)
-                        DispatchQueue.main.async {
-                            completion(.success(sourcesResponse))
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            completion(.failure(error))
-                        }
+                        return try decoder.decode(NewsSourceResponse.self, from: data)
+                    }
+                    DispatchQueue.main.async {
+                        completion(.success(sourcesResponse))
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        completion(.failure(error))
                     }
                 }
             case .failure(let error):
