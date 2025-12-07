@@ -57,7 +57,7 @@ class NewsTableViewCell: UITableViewCell {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldSystemFont(ofSize: 18)
+        label.font = FontManager.newsTitle
         label.numberOfLines = 3
         label.textColor = ColorManager.textPrimary
         label.setContentCompressionResistancePriority(.required, for: .vertical)
@@ -66,21 +66,21 @@ class NewsTableViewCell: UITableViewCell {
     
     private let creatorLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 13)
+        label.font = FontManager.newsCreator
         label.textColor = ColorManager.textSecondary
         return label
     }()
     
     private let pubDateLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 13)
+        label.font = FontManager.newsDate
         label.textColor = ColorManager.textSecondary
         return label
     }()
     
     private let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 14)
+        label.font = FontManager.newsDescription
         label.numberOfLines = 2
         label.textColor = ColorManager.textSecondary
         return label

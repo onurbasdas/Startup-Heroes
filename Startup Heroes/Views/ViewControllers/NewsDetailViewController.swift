@@ -46,7 +46,7 @@ class NewsDetailViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldSystemFont(ofSize: 26)
+        label.font = FontManager.detailTitle
         label.numberOfLines = 0
         label.textColor = ColorManager.textPrimary
         return label
@@ -65,14 +65,14 @@ class NewsDetailViewController: UIViewController {
     
     private let creatorLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.font = FontManager.detailInfo
         label.textColor = ColorManager.textSecondary
         return label
     }()
     
     private let pubDateLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.font = FontManager.detailInfo
         label.textColor = ColorManager.textSecondary
         return label
     }()
@@ -90,7 +90,7 @@ class NewsDetailViewController: UIViewController {
     
     private let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 17)
+        label.font = FontManager.detailBody
         label.numberOfLines = 0
         label.textColor = ColorManager.textPrimary
         return label
@@ -109,7 +109,7 @@ class NewsDetailViewController: UIViewController {
     
     private let summaryLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 17)
+        label.font = FontManager.detailBody
         label.numberOfLines = 0
         label.textColor = ColorManager.textPrimary
         return label
@@ -220,21 +220,21 @@ class NewsDetailViewController: UIViewController {
         
         let creatorText = NSMutableAttributedString(
             string: "Yazar: ",
-            attributes: [.foregroundColor: ColorManager.textSecondary, .font: UIFont.systemFont(ofSize: 16, weight: .medium)]
+            attributes: [.foregroundColor: ColorManager.textSecondary, .font: FontManager.detailInfo]
         )
         creatorText.append(NSAttributedString(
             string: viewModel.creator,
-            attributes: [.foregroundColor: ColorManager.primaryOrange, .font: UIFont.systemFont(ofSize: 16, weight: .semibold)]
+            attributes: [.foregroundColor: ColorManager.primaryOrange, .font: FontManager.titleFont(size: 16)]
         ))
         creatorLabel.attributedText = creatorText
         
         let dateText = NSMutableAttributedString(
             string: "Tarih: ",
-            attributes: [.foregroundColor: ColorManager.textSecondary, .font: UIFont.systemFont(ofSize: 16, weight: .medium)]
+            attributes: [.foregroundColor: ColorManager.textSecondary, .font: FontManager.detailInfo]
         )
         dateText.append(NSAttributedString(
             string: viewModel.pubDate,
-            attributes: [.foregroundColor: ColorManager.textPrimary, .font: UIFont.systemFont(ofSize: 16, weight: .regular)]
+            attributes: [.foregroundColor: ColorManager.textPrimary, .font: FontManager.detailBody]
         ))
         pubDateLabel.attributedText = dateText
         
@@ -242,7 +242,7 @@ class NewsDetailViewController: UIViewController {
             descriptionLabel.attributedText = NSAttributedString(
                 string: description,
                 attributes: [
-                    .font: UIFont.systemFont(ofSize: 17),
+                    .font: FontManager.detailBody,
                     .foregroundColor: ColorManager.textPrimary,
                     .paragraphStyle: {
                         let style = NSMutableParagraphStyle()
@@ -257,7 +257,7 @@ class NewsDetailViewController: UIViewController {
             summaryLabel.attributedText = NSAttributedString(
                 string: content,
                 attributes: [
-                    .font: UIFont.systemFont(ofSize: 17),
+                    .font: FontManager.detailBody,
                     .foregroundColor: ColorManager.textPrimary,
                     .paragraphStyle: {
                         let style = NSMutableParagraphStyle()
