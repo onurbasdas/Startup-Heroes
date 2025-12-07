@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import SnapKit
 
 extension UIImageView {
     
@@ -43,9 +42,5 @@ extension UIImageView {
         }
     }
     
-    /// Aktif görsel yükleme işlemini iptal eder
-    func cancelImageLoad(imageLoader: ImageLoaderProtocol = ImageLoader.shared) {
-        // Bu metod şimdilik boş, gerekirse URL tracking eklenebilir
-    }
 }
 

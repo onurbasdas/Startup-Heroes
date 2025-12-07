@@ -19,7 +19,6 @@ class NewsListViewController: UIViewController {
     private var filteredNewsItems: [News] = []
     private var isSearching = false
     
-    private var refreshTimer: Timer?
     private var lastScrollOffset: CGFloat = 0
     
     // Dependencies
@@ -46,11 +45,15 @@ class NewsListViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Navigation bar ayarları
+        navigationItem.title = "News"
+        navigationController?.navigationBar.prefersLargeTitles = false
+        
         setupUI()
         setupSearchBar()
         setupNetworkMonitoring()
         fetchNews()
-        startPeriodicRefresh()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -60,26 +63,24 @@ class NewsListViewController: UIViewController {
     }
     
     deinit {
-        refreshTimer?.invalidate()
         networkMonitor.stopMonitoring()
     }
     
     // MARK: - Setup
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        title = "News"
         
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(NewsTableViewCell.self, forCellReuseIdentifier: NewsTableViewCell.identifier)
         tableView.rowHeight = 120
         tableView.separatorStyle = .singleLine
+        tableView.backgroundColor = .systemBackground
         
         view.addSubview(tableView)
         
         tableView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.leading.trailing.bottom.equalToSuperview()
+            make.edges.equalToSuperview()
         }
     }
     
@@ -134,7 +135,15 @@ class NewsListViewController: UIViewController {
                     
                 case .failure(let error):
                     debugPrint("DEBUG - Failed to fetch news: \(error.localizedDescription)")
-                    self.showError(message: "Haberler yüklenirken bir hata oluştu: \(error.localizedDescription)")
+                    
+                    // 429 Rate Limit hatası için özel mesaj
+                    if let networkError = error as? NetworkError,
+                       case .httpError(let statusCode) = networkError,
+                       statusCode == 429 {
+                        self.showError(message: "API limit aşıldı. Lütfen birkaç dakika sonra tekrar deneyin. (Günlük 200 request limiti)")
+                    } else {
+                        self.showError(message: "Haberler yüklenirken bir hata oluştu: \(error.localizedDescription)")
+                    }
                 }
             }
         }
@@ -146,11 +155,6 @@ class NewsListViewController: UIViewController {
         }
     }
     
-    private func startPeriodicRefresh() {
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: Constants.newsRefreshInterval, repeats: true) { [weak self] _ in
-            self?.fetchNews()
-        }
-    }
     
     // MARK: - Helper Methods
     private func showNewHeadlinesAlert() {

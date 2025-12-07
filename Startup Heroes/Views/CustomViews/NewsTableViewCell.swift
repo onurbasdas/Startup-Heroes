@@ -139,11 +139,8 @@ class NewsTableViewCell: UITableViewCell {
             addToReadingListButton.setTitle("Add to my reading list", for: .normal)
         }
         
-        // Görsel yükleme (şimdilik placeholder)
         if let imageUrlString = news.imageUrl, let imageUrl = URL(string: imageUrlString) {
             loadImage(from: imageUrl)
-        } else {
-            newsImageView.image = nil
         }
     }
     

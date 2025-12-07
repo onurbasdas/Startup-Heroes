@@ -27,13 +27,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             readingListManager: readingListManager,
             networkMonitor: networkMonitor
         )
+        
+        // Setup navigation controller
         let navigationController = UINavigationController(rootViewController: newsListVC)
+        navigationController.navigationBar.prefersLargeTitles = false
+        navigationController.navigationBar.isTranslucent = false
+        navigationController.navigationBar.backgroundColor = .white
+        navigationController.navigationBar.barTintColor = .white
+        navigationController.view.backgroundColor = .white
         
         // Setup window
         window = UIWindow(windowScene: windowScene)
-        window?.frame = windowScene.coordinateSpace.bounds
+        window?.backgroundColor = .systemBackground
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
+        
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

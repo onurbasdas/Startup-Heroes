@@ -6,50 +6,57 @@
 //
 
 import Foundation
+import Alamofire
 
 /// Network servis protokolü - Test edilebilirlik için
 protocol NetworkServiceProtocol {
     func request(url: URL, completion: @escaping (Result<Data, Error>) -> Void)
 }
 
-/// Network servisi - HTTP isteklerini yönetir
+/// Network servisi - Alamofire kullanarak HTTP isteklerini yönetir
+/// Alamofire kullanma sebebi: Daha iyi hata yönetimi, request/response interceptor desteği,
+/// otomatik retry mekanizması ve daha temiz API sağlar.
 class NetworkService: NetworkServiceProtocol {
     
     // MARK: - Properties
-    private let session: URLSession
+    private let session: Session
     
     // MARK: - Initialization
-    init(session: URLSession = .shared) {
+    init(session: Session = .default) {
         self.session = session
     }
     
     // MARK: - Public Methods
     func request(url: URL, completion: @escaping (Result<Data, Error>) -> Void) {
-        let task = session.dataTask(with: url) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
+        session.request(url, method: .get)
+            .validate()
+            .responseData { response in
+                switch response.result {
+                case .success(let data):
+                    completion(.success(data))
+                case .failure(let afError):
+                    debugPrint("DEBUG - Alamofire request error: \(afError.localizedDescription)")
+                    completion(.failure(self.mapAFError(afError)))
+                }
             }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(NetworkError.invalidResponse))
-                return
+    }
+    
+    // MARK: - Private Methods
+    private func mapAFError(_ afError: AFError) -> NetworkError {
+        switch afError {
+        case .invalidURL(let url):
+            debugPrint("DEBUG - Invalid URL: \(url)")
+            return .invalidURL
+        case .responseValidationFailed(let reason):
+            if case .unacceptableStatusCode(let code) = reason {
+                return .httpError(statusCode: code)
             }
-            
-            guard (200...299).contains(httpResponse.statusCode) else {
-                completion(.failure(NetworkError.httpError(statusCode: httpResponse.statusCode)))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(NetworkError.noData))
-                return
-            }
-            
-            completion(.success(data))
+            return .invalidResponse
+        case .responseSerializationFailed:
+            return .invalidResponse
+        default:
+            return .invalidResponse
         }
-        
-        task.resume()
     }
 }
 

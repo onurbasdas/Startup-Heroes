@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Alamofire
 
 /// News API servis protokolü - Test edilebilirlik için
 protocol NewsAPIServiceProtocol {
@@ -13,7 +14,7 @@ protocol NewsAPIServiceProtocol {
     func fetchNewsSources(completion: @escaping (Result<NewsSourceResponse, Error>) -> Void)
 }
 
-/// NewsData API servisi
+/// NewsData API servisi - Alamofire kullanarak network isteklerini yönetir
 class NewsAPIService: NewsAPIServiceProtocol {
     
     // MARK: - Properties
@@ -44,11 +45,11 @@ class NewsAPIService: NewsAPIServiceProtocol {
                     let newsResponse = try decoder.decode(NewsResponse.self, from: data)
                     completion(.success(newsResponse))
                 } catch {
-                    debugPrint("DEBUG - JSON decode error: \(error)")
+                    debugPrint("DEBUG - JSON decode error: \(error.localizedDescription)")
                     completion(.failure(error))
                 }
             case .failure(let error):
-                debugPrint("DEBUG - Network request error: \(error)")
+                debugPrint("DEBUG - Network request error: \(error.localizedDescription)")
                 completion(.failure(error))
             }
         }
@@ -70,11 +71,11 @@ class NewsAPIService: NewsAPIServiceProtocol {
                     let sourcesResponse = try decoder.decode(NewsSourceResponse.self, from: data)
                     completion(.success(sourcesResponse))
                 } catch {
-                    debugPrint("DEBUG - JSON decode error: \(error)")
+                    debugPrint("DEBUG - JSON decode error: \(error.localizedDescription)")
                     completion(.failure(error))
                 }
             case .failure(let error):
-                debugPrint("DEBUG - Network request error: \(error)")
+                debugPrint("DEBUG - Network request error: \(error.localizedDescription)")
                 completion(.failure(error))
             }
         }

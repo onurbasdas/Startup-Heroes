@@ -124,11 +124,8 @@ class NewsDetailViewController: UIViewController {
         descriptionLabel.text = news.description
         summaryLabel.text = news.content ?? news.description
         
-        // Görsel yükleme (şimdilik placeholder)
         if let imageUrlString = news.imageUrl, let imageUrl = URL(string: imageUrlString) {
             loadImage(from: imageUrl)
-        } else {
-            newsImageView.image = nil
         }
     }
     
