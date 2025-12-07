@@ -15,36 +15,46 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
-        // Dependency injection setup
+        window = UIWindow(windowScene: windowScene)
+        window?.backgroundColor = ColorManager.backgroundLight
+        
+        let launchScreenVC = LaunchScreenViewController()
+        window?.rootViewController = launchScreenVC
+        window?.makeKeyAndVisible()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.setupMainApp()
+        }
+    }
+    
+    private func setupMainApp() {
         let networkService = NetworkService()
         let newsAPIService = NewsAPIService(networkService: networkService, apiKey: Constants.newsAPIKey)
         let readingListManager = ReadingListManager()
         let networkMonitor = NetworkMonitor()
         
-        // Create ViewModel
         let newsListViewModel = NewsListViewModel(
             newsAPIService: newsAPIService,
             readingListManager: readingListManager,
             networkMonitor: networkMonitor
         )
         
-        // Create root view controller
         let newsListVC = NewsListViewController(viewModel: newsListViewModel)
         
-        // Setup navigation controller
         let navigationController = UINavigationController(rootViewController: newsListVC)
         navigationController.navigationBar.prefersLargeTitles = false
         navigationController.navigationBar.isTranslucent = false
-        navigationController.navigationBar.backgroundColor = .white
-        navigationController.navigationBar.barTintColor = .white
-        navigationController.view.backgroundColor = .white
+        navigationController.navigationBar.backgroundColor = ColorManager.navigationBarBackground
+        navigationController.navigationBar.barTintColor = ColorManager.navigationBarBackground
+        navigationController.view.backgroundColor = ColorManager.backgroundLight
         
-        // Setup window
-        window = UIWindow(windowScene: windowScene)
-        window?.backgroundColor = .systemBackground
-        window?.rootViewController = navigationController
-        window?.makeKeyAndVisible()
-        
+        if let launchVC = window?.rootViewController as? LaunchScreenViewController {
+            launchVC.animateLaunch {
+                self.window?.rootViewController = navigationController
+            }
+        } else {
+            window?.rootViewController = navigationController
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

@@ -18,14 +18,14 @@ class NewsTableViewCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.backgroundColor = .systemGray5
+        imageView.backgroundColor = ColorManager.backgroundSecondary
         imageView.layer.cornerRadius = 8
         return imageView
     }()
     
     private let shimmerView: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemGray4
+        view.backgroundColor = ColorManager.backgroundSecondary
         view.layer.cornerRadius = 8
         view.isHidden = true
         return view
@@ -33,10 +33,12 @@ class NewsTableViewCell: UITableViewCell {
     
     private let shimmerGradientLayer: CAGradientLayer = {
         let gradient = CAGradientLayer()
+        let lightGray = ColorManager.backgroundSecondary
+        let lighterGray = UIColor(red: 0.97, green: 0.97, blue: 0.97, alpha: 1.0)
         gradient.colors = [
-            UIColor.systemGray4.cgColor,
-            UIColor.systemGray5.cgColor,
-            UIColor.systemGray4.cgColor
+            lightGray.cgColor,
+            lighterGray.cgColor,
+            lightGray.cgColor
         ]
         gradient.locations = [0.0, 0.5, 1.0]
         gradient.startPoint = CGPoint(x: 0.0, y: 0.5)
@@ -48,7 +50,7 @@ class NewsTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 17)
         label.numberOfLines = 3
-        label.textColor = .label
+        label.textColor = ColorManager.textPrimary
         label.setContentCompressionResistancePriority(.required, for: .vertical)
         return label
     }()
@@ -56,14 +58,14 @@ class NewsTableViewCell: UITableViewCell {
     private let creatorLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 13)
-        label.textColor = .secondaryLabel
+        label.textColor = ColorManager.textSecondary
         return label
     }()
     
     private let pubDateLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 13)
-        label.textColor = .secondaryLabel
+        label.textColor = ColorManager.textSecondary
         return label
     }()
     
@@ -71,7 +73,7 @@ class NewsTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14)
         label.numberOfLines = 2
-        label.textColor = .secondaryLabel
+        label.textColor = ColorManager.textSecondary
         return label
     }()
     
@@ -79,7 +81,7 @@ class NewsTableViewCell: UITableViewCell {
         let button = UIButton(type: .system)
         button.setTitle("Add to my reading list", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14)
-        button.setTitleColor(.systemBlue, for: .normal)
+        button.setTitleColor(ColorManager.primaryOrange, for: .normal)
         button.contentHorizontalAlignment = .leading
         return button
     }()
@@ -209,7 +211,7 @@ class NewsTableViewCell: UITableViewCell {
                     }
                 case .failure(let error):
                     debugPrint("DEBUG - Failed to load image from \(url.absoluteString): \(error.localizedDescription)")
-                    self.newsImageView.backgroundColor = .systemGray5
+                    self.newsImageView.backgroundColor = ColorManager.backgroundSecondary
                 }
             }
         }

@@ -19,7 +19,7 @@ class NewsDetailViewController: UIViewController {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.backgroundColor = .systemGray5
+        imageView.backgroundColor = ColorManager.backgroundSecondary
         return imageView
     }()
     
@@ -27,21 +27,21 @@ class NewsDetailViewController: UIViewController {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 24)
         label.numberOfLines = 0
-        label.textColor = .label
+        label.textColor = ColorManager.textPrimary
         return label
     }()
     
     private let creatorLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
-        label.textColor = .secondaryLabel
+        label.textColor = ColorManager.textSecondary
         return label
     }()
     
     private let pubDateLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
-        label.textColor = .secondaryLabel
+        label.textColor = ColorManager.textSecondary
         return label
     }()
     
@@ -49,7 +49,7 @@ class NewsDetailViewController: UIViewController {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18)
         label.numberOfLines = 0
-        label.textColor = .label
+        label.textColor = ColorManager.textPrimary
         return label
     }()
     
@@ -57,7 +57,7 @@ class NewsDetailViewController: UIViewController {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18)
         label.numberOfLines = 0
-        label.textColor = .label
+        label.textColor = ColorManager.textPrimary
         return label
     }()
     
@@ -83,7 +83,7 @@ class NewsDetailViewController: UIViewController {
     
     // MARK: - Setup
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = ColorManager.backgroundLight
         
         scrollView.showsVerticalScrollIndicator = true
         scrollView.alwaysBounceVertical = true

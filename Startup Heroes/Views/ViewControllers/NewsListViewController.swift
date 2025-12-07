@@ -59,7 +59,7 @@ class NewsListViewController: UIViewController {
     
     // MARK: - Setup
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = ColorManager.backgroundLight
         
         tableView.delegate = self
         tableView.dataSource = self
@@ -68,7 +68,7 @@ class NewsListViewController: UIViewController {
         tableView.rowHeight = UITableView.automaticDimension
         tableView.separatorStyle = .singleLine
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        tableView.backgroundColor = .systemBackground
+        tableView.backgroundColor = ColorManager.backgroundLight
         
         view.addSubview(tableView)
         
