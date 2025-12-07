@@ -15,12 +15,12 @@ class NewsDetailViewController: BaseViewController {
     
     private let imageCardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
+        view.backgroundColor = ColorManager.cardBackground
         view.layer.cornerRadius = 16
-        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowColor = ColorManager.shadowColor.cgColor
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
         view.layer.shadowRadius = 8
-        view.layer.shadowOpacity = 0.1
+        view.layer.shadowOpacity = 1.0
         return view
     }()
     
@@ -35,12 +35,12 @@ class NewsDetailViewController: BaseViewController {
     
     private let titleCardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
+        view.backgroundColor = ColorManager.cardBackground
         view.layer.cornerRadius = 16
-        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowColor = ColorManager.shadowColor.cgColor
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
         view.layer.shadowRadius = 8
-        view.layer.shadowOpacity = 0.1
+        view.layer.shadowOpacity = 1.0
         return view
     }()
     
@@ -54,12 +54,12 @@ class NewsDetailViewController: BaseViewController {
     
     private let infoCardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
+        view.backgroundColor = ColorManager.cardBackground
         view.layer.cornerRadius = 16
-        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowColor = ColorManager.shadowColor.cgColor
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
         view.layer.shadowRadius = 8
-        view.layer.shadowOpacity = 0.1
+        view.layer.shadowOpacity = 1.0
         return view
     }()
     
@@ -79,12 +79,12 @@ class NewsDetailViewController: BaseViewController {
     
     private let descriptionCardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
+        view.backgroundColor = ColorManager.cardBackground
         view.layer.cornerRadius = 16
-        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowColor = ColorManager.shadowColor.cgColor
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
         view.layer.shadowRadius = 8
-        view.layer.shadowOpacity = 0.1
+        view.layer.shadowOpacity = 1.0
         return view
     }()
     
@@ -98,12 +98,12 @@ class NewsDetailViewController: BaseViewController {
     
     private let contentCardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
+        view.backgroundColor = ColorManager.cardBackground
         view.layer.cornerRadius = 16
-        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowColor = ColorManager.shadowColor.cgColor
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
         view.layer.shadowRadius = 8
-        view.layer.shadowOpacity = 0.1
+        view.layer.shadowOpacity = 1.0
         return view
     }()
     
@@ -149,10 +149,13 @@ class NewsDetailViewController: BaseViewController {
         appearance.backgroundColor = ColorManager.backgroundLight
         appearance.shadowColor = .clear
         appearance.shadowImage = UIImage()
+        appearance.titleTextAttributes = [.foregroundColor: ColorManager.textPrimary]
+        appearance.largeTitleTextAttributes = [.foregroundColor: ColorManager.textPrimary]
         
         navigationBar.standardAppearance = appearance
         navigationBar.scrollEdgeAppearance = appearance
         navigationBar.compactAppearance = appearance
+        navigationBar.tintColor = ColorManager.textPrimary
     }
     
     private func setupUI() {

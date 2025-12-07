@@ -55,10 +55,13 @@ class ReadingListViewController: BaseViewController {
         appearance.backgroundColor = ColorManager.backgroundLight
         appearance.shadowColor = .clear
         appearance.shadowImage = UIImage()
+        appearance.titleTextAttributes = [.foregroundColor: ColorManager.textPrimary]
+        appearance.largeTitleTextAttributes = [.foregroundColor: ColorManager.textPrimary]
         
         navigationBar.standardAppearance = appearance
         navigationBar.scrollEdgeAppearance = appearance
         navigationBar.compactAppearance = appearance
+        navigationBar.tintColor = ColorManager.textPrimary
     }
     
     private func setupUI() {

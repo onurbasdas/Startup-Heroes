@@ -14,12 +14,12 @@ class NewsTableViewCell: UITableViewCell {
     
     private let cardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
+        view.backgroundColor = ColorManager.cardBackground
         view.layer.cornerRadius = 16
-        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowColor = ColorManager.shadowColor.cgColor
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
         view.layer.shadowRadius = 8
-        view.layer.shadowOpacity = 0.1
+        view.layer.shadowOpacity = 1.0
         return view
     }()
     
@@ -190,6 +190,15 @@ class NewsTableViewCell: UITableViewCell {
             roundedRect: cardView.bounds,
             cornerRadius: cardView.layer.cornerRadius
         ).cgPath
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            shimmerGradientLayer.colors = ColorManager.shimmerGradientColors()
+            cardView.layer.shadowColor = ColorManager.shadowColor.cgColor
+        }
     }
     
     override func setHighlighted(_ highlighted: Bool, animated: Bool) {

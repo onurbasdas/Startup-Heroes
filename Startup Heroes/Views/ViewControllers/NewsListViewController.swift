@@ -52,7 +52,9 @@ class NewsListViewController: BaseViewController {
         let button = UIButton(type: .system)
         button.setTitle("Tekrar Dene", for: .normal)
         button.titleLabel?.font = FontManager.bodyFontMedium(size: 17)
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(UIColor { traitCollection in
+            return traitCollection.userInterfaceStyle == .dark ? .white : .white
+        }, for: .normal)
         button.backgroundColor = ColorManager.primaryOrange
         button.layer.cornerRadius = 12
         return button
@@ -137,10 +139,13 @@ class NewsListViewController: BaseViewController {
         appearance.backgroundColor = ColorManager.backgroundLight
         appearance.shadowColor = .clear
         appearance.shadowImage = UIImage()
+        appearance.titleTextAttributes = [.foregroundColor: ColorManager.textPrimary]
+        appearance.largeTitleTextAttributes = [.foregroundColor: ColorManager.textPrimary]
         
         navigationBar.standardAppearance = appearance
         navigationBar.scrollEdgeAppearance = appearance
         navigationBar.compactAppearance = appearance
+        navigationBar.tintColor = ColorManager.textPrimary
     }
     
     

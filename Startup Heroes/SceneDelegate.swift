@@ -54,10 +54,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         appearance.backgroundColor = ColorManager.backgroundLight
         appearance.shadowColor = .clear
         appearance.shadowImage = UIImage()
+        appearance.titleTextAttributes = [.foregroundColor: ColorManager.textPrimary]
+        appearance.largeTitleTextAttributes = [.foregroundColor: ColorManager.textPrimary]
         
         navigationController.navigationBar.standardAppearance = appearance
         navigationController.navigationBar.scrollEdgeAppearance = appearance
         navigationController.navigationBar.compactAppearance = appearance
+        navigationController.navigationBar.tintColor = ColorManager.textPrimary
         
         navigationController.view.backgroundColor = ColorManager.backgroundLight
         

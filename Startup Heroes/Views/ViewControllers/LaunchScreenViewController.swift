@@ -53,7 +53,7 @@ class LaunchScreenViewController: UIViewController {
     
     private let newsIconView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
+        view.backgroundColor = ColorManager.cardBackground
         view.layer.cornerRadius = 12
         return view
     }()
@@ -191,6 +191,20 @@ class LaunchScreenViewController: UIViewController {
         }
         
         iconImageView.image = image
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            gradientLayer.colors = ColorManager.orangeGradientColors()
+            backgroundGradientLayer.colors = [
+                ColorManager.primaryOrangeLight.withAlphaComponent(0.2).cgColor,
+                ColorManager.primaryOrange.withAlphaComponent(0.25).cgColor,
+                ColorManager.primaryOrangeDark.withAlphaComponent(0.2).cgColor
+            ]
+            createNewsIcon()
+        }
     }
     
     func animateLaunch(completion: @escaping () -> Void) {
