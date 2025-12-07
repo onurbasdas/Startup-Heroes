@@ -21,11 +21,22 @@ struct ColorManager {
     
     static let navigationBarBackground = UIColor(red: 0.98, green: 0.98, blue: 0.98, alpha: 1.0)
     
+    static let shimmerBase = UIColor(red: 1.0, green: 0.85, blue: 0.7, alpha: 0.3)
+    static let shimmerHighlight = UIColor(red: 1.0, green: 0.95, blue: 0.85, alpha: 0.6)
+    
     static func orangeGradientColors() -> [CGColor] {
         return [
             primaryOrangeLight.cgColor,
             primaryOrange.cgColor,
             primaryOrangeDark.cgColor
+        ]
+    }
+    
+    static func shimmerGradientColors() -> [CGColor] {
+        return [
+            shimmerBase.cgColor,
+            shimmerHighlight.cgColor,
+            shimmerBase.cgColor
         ]
     }
 }

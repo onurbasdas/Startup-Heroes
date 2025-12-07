@@ -35,22 +35,17 @@ class NewsTableViewCell: UITableViewCell {
     private let shimmerView: UIView = {
         let view = UIView()
         view.backgroundColor = ColorManager.backgroundSecondary
-        view.layer.cornerRadius = 8
+        view.layer.cornerRadius = 12
         view.isHidden = true
+        view.clipsToBounds = true
         return view
     }()
     
     private let shimmerGradientLayer: CAGradientLayer = {
         let gradient = CAGradientLayer()
-        let lightGray = ColorManager.backgroundSecondary
-        let lighterGray = UIColor(red: 0.97, green: 0.97, blue: 0.97, alpha: 1.0)
-        gradient.colors = [
-            lightGray.cgColor,
-            lighterGray.cgColor,
-            lightGray.cgColor
-        ]
+        gradient.colors = ColorManager.shimmerGradientColors()
         gradient.locations = [0.0, 0.5, 1.0]
-        gradient.startPoint = CGPoint(x: 0.0, y: 0.5)
+        gradient.startPoint = CGPoint(x: -1.0, y: 0.5)
         gradient.endPoint = CGPoint(x: 1.0, y: 0.5)
         return gradient
     }()
@@ -136,6 +131,9 @@ class NewsTableViewCell: UITableViewCell {
         shimmerView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        
+        shimmerView.layer.cornerRadius = 12
+        shimmerView.layer.masksToBounds = true
         
         titleLabel.snp.makeConstraints { make in
             make.leading.equalTo(newsImageView.snp.trailing).offset(16)
@@ -248,18 +246,34 @@ class NewsTableViewCell: UITableViewCell {
     
     private func startShimmer() {
         shimmerView.isHidden = false
+        
         let animation = CABasicAnimation(keyPath: "transform.translation.x")
         animation.fromValue = -shimmerView.bounds.width * 2
         animation.toValue = shimmerView.bounds.width * 2
         animation.duration = 1.5
         animation.repeatCount = .infinity
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        animation.autoreverses = false
+        
+        shimmerGradientLayer.removeAnimation(forKey: "shimmer")
         shimmerGradientLayer.add(animation, forKey: "shimmer")
+        
+        let opacityAnimation = CABasicAnimation(keyPath: "opacity")
+        opacityAnimation.fromValue = 0.3
+        opacityAnimation.toValue = 0.8
+        opacityAnimation.duration = 1.5
+        opacityAnimation.repeatCount = .infinity
+        opacityAnimation.autoreverses = true
+        opacityAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        
+        shimmerGradientLayer.removeAnimation(forKey: "shimmerOpacity")
+        shimmerGradientLayer.add(opacityAnimation, forKey: "shimmerOpacity")
     }
     
     private func stopShimmer() {
         shimmerView.isHidden = true
         shimmerGradientLayer.removeAnimation(forKey: "shimmer")
+        shimmerGradientLayer.removeAnimation(forKey: "shimmerOpacity")
     }
     
     @objc private func readingListButtonTapped() {
