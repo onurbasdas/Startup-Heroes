@@ -21,7 +21,7 @@ class BaseViewModel {
         isLoading = loading
     }
     
-    nonisolated deinit {
+    deinit {
     }
 }
 

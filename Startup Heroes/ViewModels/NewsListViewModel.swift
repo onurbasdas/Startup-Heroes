@@ -78,7 +78,7 @@ class NewsListViewModel: BaseViewModel {
         refreshTimer = nil
     }
     
-    nonisolated deinit {
+    deinit {
         refreshTimer?.invalidate()
         refreshTimer = nil
         // Use nonisolated method directly to avoid self capture in deinit
