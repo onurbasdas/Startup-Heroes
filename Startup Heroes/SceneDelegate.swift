@@ -44,8 +44,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let navigationController = UINavigationController(rootViewController: newsListVC)
         navigationController.navigationBar.prefersLargeTitles = false
         navigationController.navigationBar.isTranslucent = false
-        navigationController.navigationBar.backgroundColor = ColorManager.navigationBarBackground
-        navigationController.navigationBar.barTintColor = ColorManager.navigationBarBackground
+        navigationController.navigationBar.backgroundColor = ColorManager.backgroundLight
+        navigationController.navigationBar.barTintColor = ColorManager.backgroundLight
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = ColorManager.backgroundLight
+        appearance.shadowColor = .clear
+        appearance.shadowImage = UIImage()
+        
+        navigationController.navigationBar.standardAppearance = appearance
+        navigationController.navigationBar.scrollEdgeAppearance = appearance
+        navigationController.navigationBar.compactAppearance = appearance
+        
         navigationController.view.backgroundColor = ColorManager.backgroundLight
         
         if let launchVC = window?.rootViewController as? LaunchScreenViewController {

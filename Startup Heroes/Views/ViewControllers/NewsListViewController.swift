@@ -37,9 +37,7 @@ class NewsListViewController: UIViewController {
         super.viewDidLoad()
         
         navigationItem.title = "News"
-        navigationController?.navigationBar.prefersLargeTitles = false
-        navigationController?.navigationBar.backgroundColor = ColorManager.backgroundLight
-        navigationController?.navigationBar.barTintColor = ColorManager.backgroundLight
+        setupNavigationBar()
         
         setupUI()
         setupSearchBar()
@@ -51,6 +49,8 @@ class NewsListViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        setupNavigationBar()
+        
         if isFirstAppearance {
             isFirstAppearance = false
             return
@@ -58,6 +58,24 @@ class NewsListViewController: UIViewController {
         
         viewModel.fetchNews()
     }
+    
+    private func setupNavigationBar() {
+        guard let navigationBar = navigationController?.navigationBar else { return }
+        
+        navigationBar.prefersLargeTitles = false
+        navigationBar.isTranslucent = false
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = ColorManager.backgroundLight
+        appearance.shadowColor = .clear
+        appearance.shadowImage = UIImage()
+        
+        navigationBar.standardAppearance = appearance
+        navigationBar.scrollEdgeAppearance = appearance
+        navigationBar.compactAppearance = appearance
+    }
+    
     
     // MARK: - Setup
     private func setupUI() {
