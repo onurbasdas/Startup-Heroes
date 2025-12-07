@@ -110,7 +110,15 @@ extension ReadingListViewController: UITableViewDataSource {
         cell.configure(with: news, isInReadingList: isInReadingList)
         cell.onReadingListButtonTapped = { [weak self] news in
             guard let self = self else { return }
-            self.viewModel.removeFromReadingList(news)
+            
+            if let indexPath = self.tableView.indexPath(for: cell) {
+                self.viewModel.removeFromReadingList(news)
+                self.displayedNews.remove(at: indexPath.row)
+                
+                UIView.performWithoutAnimation {
+                    self.tableView.deleteRows(at: [indexPath], with: .none)
+                }
+            }
         }
         
         return cell

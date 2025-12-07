@@ -38,14 +38,25 @@ class NewsListViewModel: BaseViewModel {
     private let newsAPIService: NewsAPIServiceProtocol
     private let readingListManager: ReadingListManagerProtocol
     private let networkMonitor: NetworkMonitorProtocol
+    private let newsCacheManager: NewsCacheManagerProtocol
+    
+    // Reading list cache for performance
+    private var cachedReadingListArticleIds: Set<String> = []
+    private var readingListCacheTimestamp: Date?
+    private let readingListCacheValidityDuration: TimeInterval = 0.5 // 0.5 saniye cache
+    
     init(
         newsAPIService: NewsAPIServiceProtocol,
         readingListManager: ReadingListManagerProtocol,
-        networkMonitor: NetworkMonitorProtocol
+        networkMonitor: NetworkMonitorProtocol,
+        newsCacheManager: NewsCacheManagerProtocol
     ) {
         self.newsAPIService = newsAPIService
         self.readingListManager = readingListManager
         self.networkMonitor = networkMonitor
+        self.newsCacheManager = newsCacheManager
+        super.init()
+        refreshReadingListCache()
     }
     
     func startNetworkMonitoring() {
@@ -70,42 +81,78 @@ class NewsListViewModel: BaseViewModel {
     nonisolated deinit {
         refreshTimer?.invalidate()
         refreshTimer = nil
-        networkMonitor.stopMonitoring()
+        Task { @MainActor in
+            networkMonitor.stopMonitoring()
+        }
     }
     
-    func fetchNews() {
-        guard networkMonitor.isConnected else {
-            Task { @MainActor in
-                self.setLoading(false)
+    func fetchNews(appendMode: Bool = false) {
+        if !appendMode {
+            if let cachedNews = newsCacheManager.getCachedNews(), newsCacheManager.isCacheValid() {
+                newsItems = cachedNews
+                Task { @MainActor in
+                    self.setLoading(false)
+                }
             }
-            onError?("İnternet bağlantısı yok. Bağlantı kurulduğunda haberler otomatik yüklenecek.")
+        }
+        
+        guard networkMonitor.isConnected else {
+            if newsItems.isEmpty {
+                Task { @MainActor in
+                    self.setLoading(false)
+                }
+                onError?("İnternet bağlantısı yok. Bağlantı kurulduğunda haberler otomatik yüklenecek.")
+            }
             return
         }
         
-        Task { @MainActor in
-            self.setLoading(true)
-        }
-        
         let previousCount = newsItems.count
+        let existingArticleIds = Set(newsItems.compactMap { $0.articleId })
         let shouldShowAlert = previousCount > 0 && lastScrollOffset > 0
+        
+        if !appendMode || newsItems.isEmpty {
+            Task { @MainActor in
+                self.setLoading(true)
+            }
+        }
         
         newsAPIService.fetchNews { [weak self] result in
             guard let self = self else { return }
             
             DispatchQueue.main.async {
-                Task { @MainActor in
-                    self.setLoading(false)
-                }
-                
                 switch result {
                 case .success(let response):
-                    self.newsItems = response.results
-                    
-                    if shouldShowAlert && self.newsItems.count > previousCount {
-                        self.onNewHeadlinesAdded?()
+                    if appendMode && !self.newsItems.isEmpty {
+                        let newNews = response.results.filter { news in
+                            guard let articleId = news.articleId else { return false }
+                            return !existingArticleIds.contains(articleId)
+                        }
+                        
+                        if !newNews.isEmpty {
+                            Task { @MainActor in
+                                self.setLoading(false)
+                            }
+                            self.newsItems.append(contentsOf: newNews)
+                            if shouldShowAlert {
+                                self.onNewHeadlinesAdded?()
+                            }
+                        }
+                    } else {
+                        Task { @MainActor in
+                            self.setLoading(false)
+                        }
+                        self.newsItems = response.results
+                        self.newsCacheManager.saveNews(response.results)
+                        
+                        if shouldShowAlert && self.newsItems.count > previousCount {
+                            self.onNewHeadlinesAdded?()
+                        }
                     }
                     
                 case .failure(let error):
+                    Task { @MainActor in
+                        self.setLoading(false)
+                    }
                     self.handleError(error)
                 }
             }
@@ -125,16 +172,38 @@ class NewsListViewModel: BaseViewModel {
     }
     
     func isInReadingList(_ news: News) -> Bool {
-        return readingListManager.isInReadingList(news)
+        guard let articleId = news.articleId else { return false }
+        
+        // Cache kontrolü
+        if let timestamp = readingListCacheTimestamp,
+           Date().timeIntervalSince(timestamp) < readingListCacheValidityDuration {
+            return cachedReadingListArticleIds.contains(articleId)
+        }
+        
+        // Cache geçersiz, yenile
+        refreshReadingListCache()
+        return cachedReadingListArticleIds.contains(articleId)
     }
     
     func toggleReadingList(for news: News) {
-        if readingListManager.isInReadingList(news) {
+        if isInReadingList(news) {
             readingListManager.removeFromReadingList(news)
         } else {
             readingListManager.addToReadingList(news)
         }
-        onNewsUpdated?(filteredNewsItems)
+        // Cache'i invalidate et
+        refreshReadingListCache()
+        // onNewsUpdated çağrılmayacak - sadece ilgili cell reload edilecek
+    }
+    
+    private func refreshReadingListCache() {
+        let readingList = readingListManager.getAllReadingListItems()
+        let newArticleIds = Set(readingList.compactMap { $0.articleId })
+        
+        if newArticleIds != cachedReadingListArticleIds {
+            cachedReadingListArticleIds = newArticleIds
+            readingListCacheTimestamp = Date()
+        }
     }
     
     func saveScrollPosition(_ offset: CGFloat) {
@@ -173,8 +242,16 @@ class NewsListViewModel: BaseViewModel {
            case .httpError(let statusCode) = networkError,
            statusCode == 429 {
             stopPeriodicRefresh()
-            onError?("API limit aşıldı. Lütfen birkaç dakika sonra tekrar deneyin. (Günlük 200 request limiti)")
+            
+            if newsItems.isEmpty, let cachedNews = newsCacheManager.getCachedNews() {
+                newsItems = cachedNews
+            }
+            
+            onError?("API limit aşıldı. Cache'den haberler gösteriliyor. (Günlük 200 request limiti)")
         } else {
+            if newsItems.isEmpty, let cachedNews = newsCacheManager.getCachedNews() {
+                newsItems = cachedNews
+            }
             onError?("Haberler yüklenirken bir hata oluştu: \(error.localizedDescription)")
         }
     }

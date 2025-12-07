@@ -48,14 +48,24 @@ class ImageLoader: ImageLoaderProtocol {
             }
             
             if let error = error {
-                debugPrint("DEBUG - Image load error: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
+                let nsError = error as NSError
+                if nsError.code != NSURLErrorCancelled {
+                    DispatchQueue.main.async {
+                        completion(.failure(error))
+                    }
                 }
                 return
             }
             
-            guard let data = data, let image = UIImage(data: data) else {
+            guard let data = data else {
+                let noImageError = NSError(domain: "ImageLoader", code: -1, userInfo: [NSLocalizedDescriptionKey: "Görsel verisi alınamadı"])
+                DispatchQueue.main.async {
+                    completion(.failure(noImageError))
+                }
+                return
+            }
+            
+            guard let image = UIImage(data: data) else {
                 let noImageError = NSError(domain: "ImageLoader", code: -1, userInfo: [NSLocalizedDescriptionKey: "Görsel verisi alınamadı"])
                 DispatchQueue.main.async {
                     completion(.failure(noImageError))

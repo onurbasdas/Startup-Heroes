@@ -32,11 +32,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let newsAPIService = NewsAPIService(networkService: networkService, apiKey: Constants.newsAPIKey)
         let readingListManager = ReadingListManager()
         let networkMonitor = NetworkMonitor()
+        let newsCacheManager = NewsCacheManager()
         
         let newsListViewModel = NewsListViewModel(
             newsAPIService: newsAPIService,
             readingListManager: readingListManager,
-            networkMonitor: networkMonitor
+            networkMonitor: networkMonitor,
+            newsCacheManager: newsCacheManager
         )
         
         let newsListVC = NewsListViewController(viewModel: newsListViewModel, readingListManager: readingListManager)

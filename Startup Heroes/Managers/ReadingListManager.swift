@@ -18,6 +18,9 @@ class ReadingListManager: ReadingListManagerProtocol {
     
     private let userDefaults: UserDefaults
     private let readingListKey = Constants.readingListKey
+    private var cachedReadingList: [News]?
+    private var cacheTimestamp: Date?
+    private let cacheValidityDuration: TimeInterval = 1.0 // 1 saniye cache
     
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
@@ -27,9 +30,8 @@ class ReadingListManager: ReadingListManagerProtocol {
         var readingList = getAllReadingListItems()
         
         if !isInReadingList(news) {
-            readingList.append(news)
+            readingList.insert(news, at: 0)
             saveReadingList(readingList)
-            debugPrint("DEBUG - News added to reading list: \(news.title ?? "Unknown")")
         }
     }
     
@@ -37,7 +39,6 @@ class ReadingListManager: ReadingListManagerProtocol {
         var readingList = getAllReadingListItems()
         readingList.removeAll { $0.articleId == news.articleId }
         saveReadingList(readingList)
-        debugPrint("DEBUG - News removed from reading list: \(news.title ?? "Unknown")")
     }
     
     func isInReadingList(_ news: News) -> Bool {
@@ -47,16 +48,34 @@ class ReadingListManager: ReadingListManagerProtocol {
     }
     
     func getAllReadingListItems() -> [News] {
-        guard let data = userDefaults.data(forKey: readingListKey),
-              let readingList = try? JSONDecoder().decode([News].self, from: data) else {
+        if let cached = cachedReadingList,
+           let timestamp = cacheTimestamp,
+           Date().timeIntervalSince(timestamp) < cacheValidityDuration {
+            return cached
+        }
+        
+        guard let data = userDefaults.data(forKey: readingListKey) else {
+            cachedReadingList = []
+            cacheTimestamp = Date()
             return []
         }
+        
+        guard let readingList = try? JSONDecoder().decode([News].self, from: data) else {
+            cachedReadingList = []
+            cacheTimestamp = Date()
+            return []
+        }
+        
+        cachedReadingList = readingList
+        cacheTimestamp = Date()
         return readingList
     }
     
     private func saveReadingList(_ readingList: [News]) {
         if let encoded = try? JSONEncoder().encode(readingList) {
             userDefaults.set(encoded, forKey: readingListKey)
+            cachedReadingList = readingList
+            cacheTimestamp = Date()
         }
     }
 }

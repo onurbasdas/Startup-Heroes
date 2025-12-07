@@ -9,7 +9,7 @@ import UIKit
 
 extension UIImageView {
     
-    func loadImage(from urlString: String?, placeholder: UIImage? = nil, imageLoader: ImageLoaderProtocol = ImageLoader.shared) {
+    func loadImage(from urlString: String?, placeholder: UIImage? = nil, imageLoader: ImageLoaderProtocol = ImageLoader.shared, completion: ((Bool) -> Void)? = nil) {
         if let placeholder = placeholder {
             self.image = placeholder
         } else {
@@ -17,7 +17,7 @@ extension UIImageView {
         }
         
         guard let urlString = urlString, let url = URL(string: urlString) else {
-            debugPrint("DEBUG - Invalid image URL: \(urlString ?? "nil")")
+            completion?(false)
             return
         }
         
@@ -29,8 +29,9 @@ extension UIImageView {
                 UIView.transition(with: self, duration: 0.3, options: .transitionCrossDissolve) {
                     self.image = image
                 }
-            case .failure(let error):
-                debugPrint("DEBUG - Failed to load image from \(urlString): \(error.localizedDescription)")
+                completion?(true)
+            case .failure:
+                completion?(false)
             }
         }
     }

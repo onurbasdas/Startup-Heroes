@@ -25,4 +25,7 @@ enum Constants {
     
     /// Reading List UserDefaults anahtarı
     static let readingListKey = "ReadingList"
+    
+    /// News Cache TTL (saniye cinsinden - 3600 saniye = 1 saat)
+    static let newsCacheTTL: TimeInterval = 3600
 }

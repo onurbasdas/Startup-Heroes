@@ -35,20 +35,20 @@ nonisolated class NewsAPIService: NewsAPIServiceProtocol {
         networkService.request(url: url) { result in
             switch result {
             case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    let newsResponse = try decoder.decode(NewsResponse.self, from: data)
-                    DispatchQueue.main.async {
-                        completion(.success(newsResponse))
-                    }
-                } catch {
-                    debugPrint("DEBUG - JSON decode error: \(error.localizedDescription)")
-                    DispatchQueue.main.async {
-                        completion(.failure(error))
+                Task.detached {
+                    do {
+                        let decoder = JSONDecoder()
+                        let newsResponse = try decoder.decode(NewsResponse.self, from: data)
+                        DispatchQueue.main.async {
+                            completion(.success(newsResponse))
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            completion(.failure(error))
+                        }
                     }
                 }
             case .failure(let error):
-                debugPrint("DEBUG - Network request error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }
@@ -67,20 +67,20 @@ nonisolated class NewsAPIService: NewsAPIServiceProtocol {
         networkService.request(url: url) { result in
             switch result {
             case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    let sourcesResponse = try decoder.decode(NewsSourceResponse.self, from: data)
-                    DispatchQueue.main.async {
-                        completion(.success(sourcesResponse))
-                    }
-                } catch {
-                    debugPrint("DEBUG - JSON decode error: \(error.localizedDescription)")
-                    DispatchQueue.main.async {
-                        completion(.failure(error))
+                Task.detached {
+                    do {
+                        let decoder = JSONDecoder()
+                        let sourcesResponse = try decoder.decode(NewsSourceResponse.self, from: data)
+                        DispatchQueue.main.async {
+                            completion(.success(sourcesResponse))
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            completion(.failure(error))
+                        }
                     }
                 }
             case .failure(let error):
-                debugPrint("DEBUG - Network request error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }

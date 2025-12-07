@@ -123,7 +123,7 @@ class NewsListViewController: BaseViewController {
             return
         }
         
-        viewModel.fetchNews()
+        viewModel.fetchNews(appendMode: true)
     }
     
     private func setupNavigationBar() {
@@ -156,11 +156,6 @@ class NewsListViewController: BaseViewController {
         tableView.backgroundColor = ColorManager.backgroundLight
         tableView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
         tableView.showsVerticalScrollIndicator = false
-        
-        let refreshControl = UIRefreshControl()
-        refreshControl.tintColor = ColorManager.primaryOrange
-        refreshControl.addTarget(self, action: #selector(refreshNews), for: .valueChanged)
-        tableView.refreshControl = refreshControl
         
         view.addSubview(tableView)
         view.addSubview(emptyStateView)
@@ -213,10 +208,6 @@ class NewsListViewController: BaseViewController {
         viewModel.fetchNews()
     }
     
-    @objc private func refreshNews() {
-        viewModel.fetchNews()
-    }
-    
     private func setupSearchBar() {
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
@@ -231,7 +222,6 @@ class NewsListViewController: BaseViewController {
             self.displayedNews = news
             self.restoreScrollPosition()
             self.tableView.reloadData()
-            self.tableView.refreshControl?.endRefreshing()
             self.hideLoading()
             self.retryButton.isEnabled = true
             self.updateEmptyState(show: news.isEmpty)
@@ -239,7 +229,6 @@ class NewsListViewController: BaseViewController {
         
         viewModel.onError = { [weak self] message in
             guard let self = self else { return }
-            self.tableView.refreshControl?.endRefreshing()
             self.hideLoading()
             self.retryButton.isEnabled = true
             
@@ -333,7 +322,12 @@ extension NewsListViewController: UITableViewDataSource {
         
         cell.configure(with: news, isInReadingList: isInReadingList)
         cell.onReadingListButtonTapped = { [weak self] news in
-            self?.viewModel.toggleReadingList(for: news)
+            guard let self = self else { return }
+            self.viewModel.toggleReadingList(for: news)
+            
+            // Sadece button state'ini güncelle, görselleri yeniden yükleme
+            let newIsInReadingList = self.viewModel.isInReadingList(news)
+            cell.updateReadingListButton(isInReadingList: newIsInReadingList)
         }
         
         return cell

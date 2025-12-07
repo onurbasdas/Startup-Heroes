@@ -15,6 +15,19 @@ protocol NetworkMonitorProtocol {
     func onConnectionChange(_ handler: @escaping (Bool) -> Void)
 }
 
+extension NWInterface.InterfaceType {
+    var description: String {
+        switch self {
+        case .wifi: return "WiFi"
+        case .cellular: return "Cellular"
+        case .wiredEthernet: return "Ethernet"
+        case .loopback: return "Loopback"
+        case .other: return "Other"
+        @unknown default: return "Unknown"
+        }
+    }
+}
+
 class NetworkMonitor: NetworkMonitorProtocol {
     
     private let monitor = NWPathMonitor()
@@ -33,7 +46,6 @@ class NetworkMonitor: NetworkMonitorProtocol {
         monitor.pathUpdateHandler = { [weak self] path in
             guard let self = self else { return }
             let isConnected = path.status == .satisfied
-            debugPrint("DEBUG - Network status changed: \(isConnected ? "Connected" : "Disconnected")")
             DispatchQueue.main.async {
                 self.connectionChangeHandler?(isConnected)
             }
@@ -41,7 +53,7 @@ class NetworkMonitor: NetworkMonitorProtocol {
         monitor.start(queue: queue)
     }
     
-    func stopMonitoring() {
+    nonisolated func stopMonitoring() {
         monitor.cancel()
     }
     

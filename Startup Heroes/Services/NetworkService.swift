@@ -31,7 +31,6 @@ nonisolated class NetworkService: NetworkServiceProtocol {
                 case .success(let data):
                     completion(.success(data))
                 case .failure(let afError):
-                    debugPrint("DEBUG - Alamofire request error: \(afError.localizedDescription)")
                     completion(.failure(Self.mapAFError(afError)))
                 }
             }
@@ -39,8 +38,7 @@ nonisolated class NetworkService: NetworkServiceProtocol {
     
     private static func mapAFError(_ afError: AFError) -> NetworkError {
         switch afError {
-        case .invalidURL(let url):
-            debugPrint("DEBUG - Invalid URL: \(url)")
+        case .invalidURL:
             return .invalidURL
         case .responseValidationFailed(let reason):
             if case .unacceptableStatusCode(let code) = reason {

@@ -55,7 +55,9 @@ class NewsTableViewCell: UITableViewCell {
         label.font = FontManager.newsTitle
         label.numberOfLines = 3
         label.textColor = ColorManager.textPrimary
+        label.lineBreakMode = .byTruncatingTail
         label.setContentCompressionResistancePriority(.required, for: .vertical)
+        label.setContentHuggingPriority(.required, for: .vertical)
         return label
     }()
     
@@ -87,6 +89,8 @@ class NewsTableViewCell: UITableViewCell {
         button.titleLabel?.font = .systemFont(ofSize: 15, weight: .medium)
         button.setTitleColor(ColorManager.primaryOrange, for: .normal)
         button.contentHorizontalAlignment = .leading
+        button.titleLabel?.numberOfLines = 0
+        button.titleLabel?.lineBreakMode = .byWordWrapping
         return button
     }()
     
@@ -144,6 +148,7 @@ class NewsTableViewCell: UITableViewCell {
         creatorLabel.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
             make.top.equalTo(titleLabel.snp.bottom).offset(12)
+            make.trailing.lessThanOrEqualToSuperview().offset(-16)
         }
         
         pubDateLabel.snp.makeConstraints { make in
@@ -151,6 +156,9 @@ class NewsTableViewCell: UITableViewCell {
             make.top.equalTo(creatorLabel)
             make.trailing.lessThanOrEqualToSuperview().offset(-16)
         }
+        
+        creatorLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        pubDateLabel.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         
         descriptionLabel.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
@@ -160,8 +168,13 @@ class NewsTableViewCell: UITableViewCell {
         
         addToReadingListButton.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
+            make.trailing.lessThanOrEqualToSuperview().offset(-16)
             make.top.equalTo(descriptionLabel.snp.bottom).offset(14)
             make.bottom.equalToSuperview().offset(-16)
+        }
+        
+        addToReadingListButton.titleLabel?.snp.makeConstraints { make in
+            make.leading.trailing.top.bottom.equalToSuperview()
         }
         
         addToReadingListButton.addTarget(self, action: #selector(readingListButtonTapped), for: .touchUpInside)
@@ -197,11 +210,7 @@ class NewsTableViewCell: UITableViewCell {
         pubDateLabel.text = news.pubDate?.formattedDate() ?? news.pubDate
         descriptionLabel.text = news.description
         
-        if isInReadingList {
-            addToReadingListButton.setTitle("Remove from my reading list", for: .normal)
-        } else {
-            addToReadingListButton.setTitle("Add to my reading list", for: .normal)
-        }
+        updateReadingListButton(isInReadingList: isInReadingList)
         
         newsImageView.image = nil
         startShimmer()
@@ -213,6 +222,20 @@ class NewsTableViewCell: UITableViewCell {
             stopShimmer()
             currentImageURL = nil
         }
+    }
+    
+    func updateReadingListButton(isInReadingList: Bool) {
+        if isInReadingList {
+            addToReadingListButton.setTitle("Remove from my reading list", for: .normal)
+        } else {
+            addToReadingListButton.setTitle("Add to my reading list", for: .normal)
+        }
+        
+        addToReadingListButton.titleLabel?.invalidateIntrinsicContentSize()
+        addToReadingListButton.setNeedsLayout()
+        addToReadingListButton.layoutIfNeeded()
+        setNeedsLayout()
+        layoutIfNeeded()
     }
     
     override func prepareForReuse() {
@@ -237,7 +260,10 @@ class NewsTableViewCell: UITableViewCell {
                         self.newsImageView.image = image
                     }
                 case .failure(let error):
-                    debugPrint("DEBUG - Failed to load image from \(url.absoluteString): \(error.localizedDescription)")
+                    let nsError = error as NSError
+                    if nsError.code != NSURLErrorCancelled {
+                        debugPrint("DEBUG - Failed to load image from \(url.absoluteString): \(error.localizedDescription)")
+                    }
                     self.newsImageView.backgroundColor = ColorManager.backgroundSecondary
                 }
             }

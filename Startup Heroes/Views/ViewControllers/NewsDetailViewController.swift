@@ -239,6 +239,7 @@ class NewsDetailViewController: BaseViewController {
     }
     
     private func configureContent() {
+        titleCardView.isHidden = viewModel.title == nil || viewModel.title?.isEmpty == true
         titleLabel.text = viewModel.title
         
         let creatorText = NSMutableAttributedString(
@@ -261,7 +262,8 @@ class NewsDetailViewController: BaseViewController {
         ))
         pubDateLabel.attributedText = dateText
         
-        if let description = viewModel.description {
+        if let description = viewModel.description, !description.isEmpty {
+            descriptionCardView.isHidden = false
             descriptionLabel.attributedText = NSAttributedString(
                 string: description,
                 attributes: [
@@ -274,9 +276,12 @@ class NewsDetailViewController: BaseViewController {
                     }()
                 ]
             )
+        } else {
+            descriptionCardView.isHidden = true
         }
         
-        if let content = viewModel.content {
+        if let content = viewModel.content, !content.isEmpty {
+            contentCardView.isHidden = false
             summaryLabel.attributedText = NSAttributedString(
                 string: content,
                 attributes: [
@@ -289,14 +294,24 @@ class NewsDetailViewController: BaseViewController {
                     }()
                 ]
             )
+        } else {
+            contentCardView.isHidden = true
         }
         
         if let imageUrl = viewModel.imageUrl {
+            imageCardView.isHidden = false
             loadImage(from: imageUrl)
+        } else {
+            imageCardView.isHidden = true
         }
     }
     
     private func loadImage(from url: URL) {
-        newsImageView.loadImage(from: url.absoluteString)
+        newsImageView.loadImage(from: url.absoluteString) { [weak self] success in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.imageCardView.isHidden = !success
+            }
+        }
     }
 }
