@@ -8,7 +8,6 @@
 import Foundation
 
 extension String {
-    /// API'den gelen tarih string'ini okunabilir formata çevirir
     func formattedDate() -> String? {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -21,7 +20,6 @@ extension String {
             return displayFormatter.string(from: date)
         }
         
-        // Alternatif format dene
         let alternativeFormatter = DateFormatter()
         alternativeFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         if let date = alternativeFormatter.date(from: self) {

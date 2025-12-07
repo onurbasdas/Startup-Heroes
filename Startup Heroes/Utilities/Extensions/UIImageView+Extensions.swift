@@ -9,13 +9,7 @@ import UIKit
 
 extension UIImageView {
     
-    /// URL'den görsel yükler ve UIImageView'e set eder
-    /// - Parameters:
-    ///   - urlString: Görsel URL string'i
-    ///   - placeholder: Yüklenirken gösterilecek placeholder görsel (opsiyonel)
-    ///   - imageLoader: ImageLoader servisi (default: shared instance)
     func loadImage(from urlString: String?, placeholder: UIImage? = nil, imageLoader: ImageLoaderProtocol = ImageLoader.shared) {
-        // Placeholder göster
         if let placeholder = placeholder {
             self.image = placeholder
         } else {
@@ -37,7 +31,6 @@ extension UIImageView {
                 }
             case .failure(let error):
                 debugPrint("DEBUG - Failed to load image from \(urlString): \(error.localizedDescription)")
-                // Hata durumunda placeholder kalır veya nil olur
             }
         }
     }

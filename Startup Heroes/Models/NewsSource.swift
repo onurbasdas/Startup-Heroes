@@ -7,8 +7,7 @@
 
 import Foundation
 
-/// Haber kaynağı modeli
-struct NewsSource: Codable {
+struct NewsSource: Codable, Sendable {
     let id: String
     let name: String
     let description: String?
@@ -18,8 +17,7 @@ struct NewsSource: Codable {
     let country: String?
 }
 
-/// Haber kaynakları API yanıt modeli
-struct NewsSourceResponse: Codable {
+struct NewsSourceResponse: Codable, Sendable {
     let status: String
     let sources: [NewsSource]
 }

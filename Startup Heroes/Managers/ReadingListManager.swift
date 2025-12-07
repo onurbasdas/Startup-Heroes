@@ -7,7 +7,6 @@
 
 import Foundation
 
-/// Reading List Manager protokolü - Test edilebilirlik için
 protocol ReadingListManagerProtocol {
     func addToReadingList(_ news: News)
     func removeFromReadingList(_ news: News)
@@ -15,23 +14,18 @@ protocol ReadingListManagerProtocol {
     func getAllReadingListItems() -> [News]
 }
 
-/// Okuma listesi yöneticisi - UserDefaults ile kalıcı depolama
 class ReadingListManager: ReadingListManagerProtocol {
     
-    // MARK: - Properties
     private let userDefaults: UserDefaults
     private let readingListKey = Constants.readingListKey
     
-    // MARK: - Initialization
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
     }
     
-    // MARK: - Public Methods
     func addToReadingList(_ news: News) {
         var readingList = getAllReadingListItems()
         
-        // Zaten listede yoksa ekle
         if !isInReadingList(news) {
             readingList.append(news)
             saveReadingList(readingList)
@@ -60,7 +54,6 @@ class ReadingListManager: ReadingListManagerProtocol {
         return readingList
     }
     
-    // MARK: - Private Methods
     private func saveReadingList(_ readingList: [News]) {
         if let encoded = try? JSONEncoder().encode(readingList) {
             userDefaults.set(encoded, forKey: readingListKey)

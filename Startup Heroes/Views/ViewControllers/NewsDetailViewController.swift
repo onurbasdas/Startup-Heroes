@@ -61,11 +61,12 @@ class NewsDetailViewController: UIViewController {
         return label
     }()
     
-    private let news: News
+    // MARK: - Properties
+    private let viewModel: NewsDetailViewModel
     
     // MARK: - Initialization
-    init(news: News) {
-        self.news = news
+    init(viewModel: NewsDetailViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -103,7 +104,6 @@ class NewsDetailViewController: UIViewController {
             make.width.equalToSuperview().offset(-32)
         }
         
-        // UIStackView içine elemanları ekle
         contentView.addArrangedSubview(newsImageView)
         contentView.addArrangedSubview(titleLabel)
         contentView.addArrangedSubview(creatorLabel)
@@ -111,20 +111,19 @@ class NewsDetailViewController: UIViewController {
         contentView.addArrangedSubview(descriptionLabel)
         contentView.addArrangedSubview(summaryLabel)
         
-        // Görsel yüksekliği
         newsImageView.snp.makeConstraints { make in
             make.height.equalTo(300)
         }
     }
     
     private func configureContent() {
-        titleLabel.text = news.title
-        creatorLabel.text = "Yazar: \(news.creator?.joined(separator: ", ") ?? "Bilinmiyor")"
-        pubDateLabel.text = "Tarih: \(news.pubDate?.formattedDate() ?? news.pubDate ?? "Bilinmiyor")"
-        descriptionLabel.text = news.description
-        summaryLabel.text = news.content ?? news.description
+        titleLabel.text = viewModel.title
+        creatorLabel.text = "Yazar: \(viewModel.creator)"
+        pubDateLabel.text = "Tarih: \(viewModel.pubDate)"
+        descriptionLabel.text = viewModel.description
+        summaryLabel.text = viewModel.content
         
-        if let imageUrlString = news.imageUrl, let imageUrl = URL(string: imageUrlString) {
+        if let imageUrl = viewModel.imageUrl {
             loadImage(from: imageUrl)
         }
     }

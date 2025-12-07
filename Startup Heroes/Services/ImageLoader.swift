@@ -7,16 +7,13 @@
 
 import UIKit
 
-/// Görsel yükleme servisi protokolü - Test edilebilirlik için
 protocol ImageLoaderProtocol {
     func loadImage(from url: URL, completion: @escaping (Result<UIImage, Error>) -> Void)
     func cancelLoad(for url: URL)
 }
 
-/// Görsel yükleme servisi - Async görsel indirme ve cache
 class ImageLoader: ImageLoaderProtocol {
     
-    // MARK: - Properties
     static let shared = ImageLoader()
     
     private let session: URLSession
@@ -24,19 +21,16 @@ class ImageLoader: ImageLoaderProtocol {
     private var activeTasks: [URL: URLSessionDataTask] = [:]
     private let queue = DispatchQueue(label: "ImageLoader", attributes: .concurrent)
     
-    // MARK: - Initialization
     init(session: URLSession = .shared) {
         self.session = session
         self.cache = NSCache<NSURL, UIImage>()
         cache.countLimit = 100
-        cache.totalCostLimit = 50 * 1024 * 1024 // 50MB
+        cache.totalCostLimit = 50 * 1024 * 1024
     }
     
-    // MARK: - Public Methods
     func loadImage(from url: URL, completion: @escaping (Result<UIImage, Error>) -> Void) {
         let nsURL = url as NSURL
         
-        // Cache'den kontrol et
         if let cachedImage = cache.object(forKey: nsURL) {
             DispatchQueue.main.async {
                 completion(.success(cachedImage))
@@ -44,10 +38,8 @@ class ImageLoader: ImageLoaderProtocol {
             return
         }
         
-        // Zaten yükleniyorsa iptal et
         cancelLoad(for: url)
         
-        // Yeni task oluştur
         let task = session.dataTask(with: url) { [weak self] data, response, error in
             guard let self = self else { return }
             
@@ -71,7 +63,6 @@ class ImageLoader: ImageLoaderProtocol {
                 return
             }
             
-            // Cache'e kaydet
             self.cache.setObject(image, forKey: nsURL)
             
             DispatchQueue.main.async {

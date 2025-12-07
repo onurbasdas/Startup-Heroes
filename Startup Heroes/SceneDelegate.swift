@@ -21,12 +21,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let readingListManager = ReadingListManager()
         let networkMonitor = NetworkMonitor()
         
-        // Create root view controller
-        let newsListVC = NewsListViewController(
+        // Create ViewModel
+        let newsListViewModel = NewsListViewModel(
             newsAPIService: newsAPIService,
             readingListManager: readingListManager,
             networkMonitor: networkMonitor
         )
+        
+        // Create root view controller
+        let newsListVC = NewsListViewController(viewModel: newsListViewModel)
         
         // Setup navigation controller
         let navigationController = UINavigationController(rootViewController: newsListVC)

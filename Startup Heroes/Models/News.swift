@@ -7,8 +7,7 @@
 
 import Foundation
 
-/// Haber modeli - NewsData API'den gelen haber verilerini temsil eder
-struct News: Codable {
+struct News: Codable, Sendable {
     let articleId: String?
     let title: String?
     let link: String?
@@ -48,8 +47,7 @@ struct News: Codable {
     }
 }
 
-/// NewsData API yanıt modeli
-struct NewsResponse: Codable {
+struct NewsResponse: Codable, Sendable {
     let status: String
     let totalResults: Int
     let results: [News]

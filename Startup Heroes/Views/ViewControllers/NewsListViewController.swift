@@ -15,26 +15,16 @@ class NewsListViewController: UIViewController {
     private let tableView = UITableView()
     private let searchController = UISearchController(searchResultsController: nil)
     
-    private var newsItems: [News] = []
-    private var filteredNewsItems: [News] = []
-    private var isSearching = false
-    
+    private var displayedNews: [News] = []
     private var lastScrollOffset: CGFloat = 0
+    private var isFirstAppearance = true
     
-    // Dependencies
-    private let newsAPIService: NewsAPIServiceProtocol
-    private let readingListManager: ReadingListManagerProtocol
-    private let networkMonitor: NetworkMonitorProtocol
+    // ViewModel
+    private let viewModel: NewsListViewModel
     
     // MARK: - Initialization
-    init(
-        newsAPIService: NewsAPIServiceProtocol,
-        readingListManager: ReadingListManagerProtocol,
-        networkMonitor: NetworkMonitorProtocol
-    ) {
-        self.newsAPIService = newsAPIService
-        self.readingListManager = readingListManager
-        self.networkMonitor = networkMonitor
+    init(viewModel: NewsListViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -46,24 +36,25 @@ class NewsListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Navigation bar ayarları
         navigationItem.title = "News"
         navigationController?.navigationBar.prefersLargeTitles = false
         
         setupUI()
         setupSearchBar()
-        setupNetworkMonitoring()
-        fetchNews()
+        setupViewModelBindings()
+        viewModel.startNetworkMonitoring()
+        viewModel.fetchNews()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // Detaydan geri geldiğinde haberleri yenile
-        fetchNews()
-    }
-    
-    deinit {
-        networkMonitor.stopMonitoring()
+        
+        if isFirstAppearance {
+            isFirstAppearance = false
+            return
+        }
+        
+        viewModel.fetchNews()
     }
     
     // MARK: - Setup
@@ -73,8 +64,10 @@ class NewsListViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(NewsTableViewCell.self, forCellReuseIdentifier: NewsTableViewCell.identifier)
-        tableView.rowHeight = 120
+        tableView.estimatedRowHeight = 160
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.separatorStyle = .singleLine
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         tableView.backgroundColor = .systemBackground
         
         view.addSubview(tableView)
@@ -92,71 +85,31 @@ class NewsListViewController: UIViewController {
         definesPresentationContext = true
     }
     
-    private func setupNetworkMonitoring() {
-        networkMonitor.onConnectionChange { [weak self] isConnected in
+    private func setupViewModelBindings() {
+        viewModel.onNewsUpdated = { [weak self] news in
             guard let self = self else { return }
-            if isConnected {
-                debugPrint("DEBUG - Network connected, fetching news...")
-                self.fetchNews()
-            } else {
-                debugPrint("DEBUG - Network disconnected, pausing API calls")
+            self.displayedNews = news
+            self.restoreScrollPosition()
+            self.tableView.reloadData()
+        }
+        
+        viewModel.onError = { [weak self] message in
+            guard let self = self else { return }
+            self.showError(message: message)
+        }
+        
+        viewModel.onNewHeadlinesAdded = { [weak self] in
+            guard let self = self else { return }
+            self.showNewHeadlinesAlert()
+        }
+        
+        viewModel.onNetworkStatusChanged = { [weak self] isConnected in
+            guard let self = self else { return }
+            if !isConnected {
                 self.showError(message: "İnternet bağlantısı yok. Bağlantı kurulduğunda haberler otomatik yüklenecek.")
             }
         }
     }
-    
-    // MARK: - Network Methods
-    private func fetchNews() {
-        guard networkMonitor.isConnected else {
-            debugPrint("DEBUG - No network connection, skipping fetch")
-            return
-        }
-        
-        // Scroll pozisyonunu kaydet
-        lastScrollOffset = tableView.contentOffset.y
-        
-        newsAPIService.fetchNews { [weak self] result in
-            guard let self = self else { return }
-            
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let response):
-                    let previousCount = self.newsItems.count
-                    self.newsItems = response.results
-                    
-                    // Yeni haberler eklendiyse ve kullanıcı en üstte değilse alert göster
-                    if previousCount > 0 && self.newsItems.count > previousCount && self.lastScrollOffset > 0 {
-                        self.showNewHeadlinesAlert()
-                    }
-                    
-                    // Scroll pozisyonunu koru
-                    self.restoreScrollPosition()
-                    self.tableView.reloadData()
-                    
-                case .failure(let error):
-                    debugPrint("DEBUG - Failed to fetch news: \(error.localizedDescription)")
-                    
-                    // 429 Rate Limit hatası için özel mesaj
-                    if let networkError = error as? NetworkError,
-                       case .httpError(let statusCode) = networkError,
-                       statusCode == 429 {
-                        self.showError(message: "API limit aşıldı. Lütfen birkaç dakika sonra tekrar deneyin. (Günlük 200 request limiti)")
-                    } else {
-                        self.showError(message: "Haberler yüklenirken bir hata oluştu: \(error.localizedDescription)")
-                    }
-                }
-            }
-        }
-    }
-    
-    private func restoreScrollPosition() {
-        if lastScrollOffset > 0 {
-            tableView.setContentOffset(CGPoint(x: 0, y: lastScrollOffset), animated: false)
-        }
-    }
-    
-    
-    // MARK: - Helper Methods
     private func showNewHeadlinesAlert() {
         let alert = UIAlertController(title: "New headlines added", message: nil, preferredStyle: .alert)
         present(alert, animated: true)
@@ -172,24 +125,18 @@ class NewsListViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    private func filterNews(with searchText: String) {
-        if searchText.isEmpty {
-            filteredNewsItems = newsItems
-        } else {
-            filteredNewsItems = newsItems.filter { news in
-                let titleMatch = news.title?.lowercased().contains(searchText.lowercased()) ?? false
-                let descriptionMatch = news.description?.lowercased().contains(searchText.lowercased()) ?? false
-                return titleMatch || descriptionMatch
-            }
+    private func restoreScrollPosition() {
+        let savedOffset = viewModel.getScrollPosition()
+        if savedOffset > 0 {
+            tableView.setContentOffset(CGPoint(x: 0, y: savedOffset), animated: false)
         }
-        tableView.reloadData()
     }
 }
 
 // MARK: - UITableViewDataSource
 extension NewsListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return isSearching ? filteredNewsItems.count : newsItems.count
+        return displayedNews.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -197,24 +144,15 @@ extension NewsListViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         
-        let news = isSearching ? filteredNewsItems[indexPath.row] : newsItems[indexPath.row]
-        let isInReadingList = readingListManager.isInReadingList(news)
+        let news = displayedNews[indexPath.row]
+        let isInReadingList = viewModel.isInReadingList(news)
         
         cell.configure(with: news, isInReadingList: isInReadingList)
         cell.onReadingListButtonTapped = { [weak self] news in
-            self?.handleReadingListToggle(for: news)
+            self?.viewModel.toggleReadingList(for: news)
         }
         
         return cell
-    }
-    
-    private func handleReadingListToggle(for news: News) {
-        if readingListManager.isInReadingList(news) {
-            readingListManager.removeFromReadingList(news)
-        } else {
-            readingListManager.addToReadingList(news)
-        }
-        tableView.reloadData()
     }
 }
 
@@ -223,9 +161,14 @@ extension NewsListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        let news = isSearching ? filteredNewsItems[indexPath.row] : newsItems[indexPath.row]
-        let detailVC = NewsDetailViewController(news: news)
+        let news = displayedNews[indexPath.row]
+        let viewModel = NewsDetailViewModel(news: news)
+        let detailVC = NewsDetailViewController(viewModel: viewModel)
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        viewModel.saveScrollPosition(scrollView.contentOffset.y)
     }
 }
 
@@ -233,7 +176,6 @@ extension NewsListViewController: UITableViewDelegate {
 extension NewsListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         let searchText = searchController.searchBar.text ?? ""
-        isSearching = !searchText.isEmpty
-        filterNews(with: searchText)
+        viewModel.searchNews(text: searchText)
     }
 }
